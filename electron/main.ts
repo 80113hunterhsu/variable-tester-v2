@@ -2,9 +2,11 @@ import { app, BrowserWindow } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { initDatabase, initCommands } from './libraries/db.js'
 
-const require = createRequire(import.meta.url)
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const require = createRequire(import.meta.url);
+const Database = require('better-sqlite3');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // The built directory structure
 //
@@ -41,8 +43,8 @@ function createWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
+    win.webContents.openDevTools(); // Open DevTools if the app is running in development mode.
   } else {
-    // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
 }
@@ -51,10 +53,8 @@ function createWindow() {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-    win = null
-  }
+  app.quit()
+  win = null
 })
 
 app.on('activate', () => {
@@ -65,4 +65,9 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+let db: any
+app.whenReady().then(() => {
+  db = initDatabase(path, Database);
+  createWindow();
+  initCommands(db);
+})

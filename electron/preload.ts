@@ -1,4 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron'
+import { exposeHandlers } from './libraries/db'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -22,3 +23,5 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   // You can expose other APTs you need here.
   // ...
 })
+
+exposeHandlers();
