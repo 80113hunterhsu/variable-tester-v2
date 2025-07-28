@@ -1,0 +1,10 @@
+.navbar-brand {
+    font-size: 1.7rem;
+    letter-spacing: 0.05em;
+    color: #2d3748;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.nav-link {
+    transition: all 0.2s;
+}
