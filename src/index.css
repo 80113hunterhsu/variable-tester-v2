@@ -1,8 +1,8 @@
 .hider {
-  display: none !important;
+    display: none !important;
 }
 
 .flex-center {
-  justify-content: center;
-  align-items: center;
+    justify-content: center;
+    align-items: center;
 }
