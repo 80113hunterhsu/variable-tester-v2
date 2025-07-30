@@ -1,4 +1,4 @@
-import { app, ipcMain, ipcRenderer, contextBridge } from 'electron'
+import { app, ipcMain } from 'electron'
 
 export function initDatabase(path: any, Database: any) {
     const dbPath = path.join(app.getPath('userData'), 'variable-tester.sqlite');
@@ -95,7 +95,7 @@ export function initCommands(db: any) {
     ipcMain.handle('db:getHandlers', () => handlers);
 }
 
-export async function exposeHandlers() {
+export async function exposeHandlers(ipcRenderer: Electron.IpcRenderer, contextBridge: Electron.ContextBridge) {
     const handlerList = await ipcRenderer.invoke('db:getHandlers');
     const handlers: Record<string, Record<string, any>> = {};
     Object.entries(handlerList).forEach(([namespace, methods]: [string, unknown]) => {

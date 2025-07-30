@@ -24,4 +24,4 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   // ...
 })
 
-exposeHandlers();
+exposeHandlers(ipcRenderer, contextBridge);
