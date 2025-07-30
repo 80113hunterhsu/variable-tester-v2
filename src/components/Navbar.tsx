@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { NavbarProps } from "../types/Navbar/NavbarTypes";
+import { generateElementKey } from "../helpers/Element";
 import "./Navbar.css";
 
 export default function Navbar({ navbarLinks }: NavbarProps) {
@@ -26,7 +27,7 @@ export default function Navbar({ navbarLinks }: NavbarProps) {
 
                             return (
                                 <li className={liClasses.join(" ")} key={link.to}>
-                                    <Link className={linkClasses.join(" ")} to={link.to}>{link.title}</Link>
+                                    <Link key={generateElementKey(`Navbar-${link.to}-${link.title}`)} className={linkClasses.join(" ")} to={link.to}>{link.title}</Link>
                                 </li>
                             )
                         })}
