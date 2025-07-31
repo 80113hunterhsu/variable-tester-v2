@@ -26,9 +26,9 @@ export default function PageContainer({
         "d-flex",
         "flex-column",
         "m-0",
-        "px-4",
+        "px-3",
         "py-0",
-        "gap-4"
+        "gap-3"
     ];
     return (
         <div id="page-container" className={classes.join(" ")}>

@@ -6,7 +6,7 @@ export default function Footer() {
         "text-muted",
         "px-4",
         "py-3",
-        "mb-4",
+        "mb-3",
         "element",
     ];
     return (

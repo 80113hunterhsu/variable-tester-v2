@@ -5,7 +5,7 @@ import "./Navbar.css";
 
 export default function Navbar({ navbarLinks }: NavbarProps) {
     return (
-        <nav className="navbar navbar-expand-lg shadow-sm mt-4 px-2 element">
+        <nav className="navbar navbar-expand-lg shadow-sm mt-3 px-2 element">
             <div className="container-fluid">
                 <Link className="navbar-brand fw-bold" to="/">Variable Tester</Link>
                 <div className="collapse navbar-collapse">
