@@ -5,15 +5,15 @@ import PageContainer from "../components/PageContainer";
 import { setSubtitle } from "../helpers/Title";
 
 const links = [
-    { title: "開始實驗", to: "/experiment", active: true },
-    { title: "實驗結果", to: "/results" },
-    { title: "參數設定", to: "/settings" },
+    { title: "Experiment", to: "/experiment", active: true },
+    { title: "Results", to: "/results" },
+    { title: "Settings", to: "/settings" },
 ];
 export default function Experiment() {
-    setSubtitle("開始實驗");
+    setSubtitle("Experiment");
     return (
         <PageContainer navbarLinks={links}>
-            <div className="d-flex flex-center flex-column gap-lg-2 gap-3">
+            <div className="d-flex flex-center flex-column gap-lg-4 gap-3">
                 <h1 className="text-center">Experiment</h1>
             </div>
         </PageContainer>
