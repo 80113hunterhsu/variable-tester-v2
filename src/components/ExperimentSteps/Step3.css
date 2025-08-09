@@ -1,0 +1,22 @@
+.drop-zone {
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 2rem;
+    text-align: center;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease,
+        color 0.25s ease;
+}
+
+.drop-zone:hover {
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--bs-primary-border-subtle);
+}
+
+.drop-zone.drag-over {
+    background-color: var(--bs-primary-bg-subtle);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary-text-emphasis);
+}
