@@ -8,6 +8,7 @@ export default function Footer() {
         "py-3",
         "mb-3",
         "element",
+        "shadow-sm"
     ];
     return (
         <footer className={classes.join(" ")}>

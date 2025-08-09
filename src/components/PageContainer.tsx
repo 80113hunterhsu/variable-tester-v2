@@ -36,7 +36,7 @@ export default function PageContainer({
             <Navbar navbarLinks={navbarLinks} />
 
             {/* 內容區塊 */}
-            <div id="content-container" className="px-4 py-3 d-flex flex-center">
+            <div id="content-container" className="px-4 py-3 d-flex flex-center shadow-sm">
                 {children}
             </div>
 
