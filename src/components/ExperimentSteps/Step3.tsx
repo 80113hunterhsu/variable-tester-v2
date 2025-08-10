@@ -1,6 +1,6 @@
 // node modules
 import { useState, useRef, useEffect, RefObject } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // helpers
 import { checkRequiredFields } from "../../helpers/ExperimentStepsHelper";
@@ -32,12 +32,9 @@ function handleFileChange(
     }
 }
 
-function nextStep(
-    nav: any,
-    data: { [key: string]: any }
-) {
-    if (!data.hasOwnProperty('video')) {
-        alert(`Please provide a video file.`);
+function nextStep(nav: any, data: { [key: string]: any }) {
+    if (!data.hasOwnProperty("video")) {
+        alert("Please provide a video file.");
         return;
     }
     nav("/experiment/step/4");
@@ -124,7 +121,13 @@ export default function Step3({
                     onChange={(e) => handleFileChange(e, updateData, dropZoneText)}
                 />
             </div>
-            <div className="d-flex flex-center">
+            <div className="d-flex flex-center gap-3">
+                <Link
+                    className="btn btn-outline-secondary btn-lg"
+                    to={"/experiment/step/2"}
+                >
+                    Back
+                </Link>
                 <button
                     className="btn btn-outline-primary btn-lg"
                     onClick={() => nextStep(nav, data)}
