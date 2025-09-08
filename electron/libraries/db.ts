@@ -1,14 +1,16 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain } from "electron";
 
 export function initDatabase(path: any, Database: any) {
-    const dbPath = path.join(app.getPath('userData'), 'variable-tester.sqlite');
+    const dbPath = path.join(app.getPath("userData"), "variable-tester.sqlite");
     const db = new Database(dbPath);
     // Create tables if they do not exist
     db.exec(`
-        CREATE TABLE IF NOT EXISTS tests (
+        CREATE TABLE IF NOT EXISTS experiments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             subject_name TEXT NOT NULL,
             variable_name TEXT NOT NULL,
+            video_name TEXT NOT NULL,
+            settings TEXT NOT NULL,
             result TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -22,60 +24,95 @@ export function initDatabase(path: any, Database: any) {
 
 export function initCommands(db: any) {
     const commands = {
-        tests: {
+        experiments: {
             // 取得所有測試資料
             list: () => {
-                return db.prepare('SELECT * FROM tests').all();
+                return db.prepare("SELECT * FROM experiments").all();
             },
             // 取得一筆測試資料
             get: (_: any, id: number) => {
-                return db.prepare('SELECT * FROM tests WHERE id = ?').get(id);
+                return db.prepare("SELECT * FROM experiments WHERE id = ?").get(id);
             },
             // 新增一筆測試資料
-            add: (_: any, test: { subject_name: string; variable_name: string; result: string }) => {
-                const stmt = db.prepare('INSERT INTO tests (subject_name, variable_name, result) VALUES (?, ?, ?)');
-                const info = stmt.run(test.subject_name, test.variable_name, test.result);
+            add: (
+                _: any,
+                experiment: {
+                    subject_name: string;
+                    variable_name: string;
+                    video_name: string;
+                    settings: string;
+                    result: string;
+                }
+            ) => {
+                const stmt = db.prepare(
+                    "INSERT INTO experiments (subject_name, variable_name, video_name, result) VALUES (?, ?, ?, ?)"
+                );
+                const info = stmt.run(
+                    experiment.subject_name,
+                    experiment.variable_name,
+                    experiment.video_name,
+                    experiment.result
+                );
                 return { id: info.lastInsertRowid };
             },
             // 更新一筆測試資料
-            update: (_: any, test: { subject_name: string; variable_name: string; result: string; id: number }) => {
-                const stmt = db.prepare('UPDATE tests SET subject_name = ?, variable_name = ?, result = ? WHERE id = ?');
-                stmt.run(test.subject_name, test.variable_name, test.result, test.id);
+            update: (
+                _: any,
+                experiment: {
+                    subject_name: string;
+                    variable_name: string;
+                    result: string;
+                    id: number;
+                }
+            ) => {
+                const stmt = db.prepare(
+                    "UPDATE experiments SET subject_name = ?, variable_name = ?, result = ? WHERE id = ?"
+                );
+                stmt.run(
+                    experiment.subject_name,
+                    experiment.variable_name,
+                    experiment.result,
+                    experiment.id
+                );
                 return { success: true };
             },
             // 刪除一筆測試資料
             delete: (_: any, id: number) => {
-                db.prepare('DELETE FROM tests WHERE id = ?').run(id);
+                db.prepare("DELETE FROM experiments WHERE id = ?").run(id);
                 return { success: true };
             },
         },
         settings: {
             // 取得所有設定
             list: () => {
-                return db.prepare('SELECT * FROM settings').all();
+                return db.prepare("SELECT * FROM settings").all();
             },
             // 取得一筆設定
             get: (_: any, key: string) => {
-                return db.prepare('SELECT * FROM settings WHERE key = ?').get(key);
+                return db.prepare("SELECT * FROM settings WHERE key = ?").get(key);
             },
             // 新增一筆設定
             add: (_: any, setting: { key: string; value: string }) => {
-                const stmt = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)');
+                const stmt = db.prepare(
+                    "INSERT INTO settings (key, value) VALUES (?, ?)"
+                );
                 const info = stmt.run(setting.key, setting.value);
                 return { id: info.lastInsertRowid };
             },
             // 更新一筆設定
             update: (_: any, setting: { key: string; value: string; id: number }) => {
-                const stmt = db.prepare('UPDATE settings SET key = ?, value = ? WHERE id = ?');
+                const stmt = db.prepare(
+                    "UPDATE settings SET key = ?, value = ? WHERE id = ?"
+                );
                 stmt.run(setting.key, setting.value, setting.id);
                 return { success: true };
             },
             // 刪除一筆設定
             delete: (_: any, id: number) => {
-                db.prepare('DELETE FROM settings WHERE id = ?').run(id);
+                db.prepare("DELETE FROM settings WHERE id = ?").run(id);
                 return { success: true };
-            }
-        }
+            },
+        },
     };
 
     // 註冊 IPC 處理器
@@ -88,23 +125,31 @@ export function initCommands(db: any) {
             const commandName = `db:${namespace}:${name}`;
             ipcMain.handle(commandName, callback);
             handlers[namespace][name] = commandName;
-        })
-    })
+        });
+    });
 
     // 將 handlers 清單提供給 Renderer process 使用
-    ipcMain.handle('db:getHandlers', () => handlers);
+    ipcMain.handle("db:getHandlers", () => handlers);
 }
 
-export async function exposeHandlers(ipcRenderer: Electron.IpcRenderer, contextBridge: Electron.ContextBridge) {
-    const handlerList = await ipcRenderer.invoke('db:getHandlers');
+export async function exposeHandlers(
+    ipcRenderer: Electron.IpcRenderer,
+    contextBridge: Electron.ContextBridge
+) {
+    const handlerList = await ipcRenderer.invoke("db:getHandlers");
     const handlers: Record<string, Record<string, any>> = {};
-    Object.entries(handlerList).forEach(([namespace, methods]: [string, unknown]) => {
-        if (!handlers[namespace]) {
-            handlers[namespace] = {};
+    Object.entries(handlerList).forEach(
+        ([namespace, methods]: [string, unknown]) => {
+            if (!handlers[namespace]) {
+                handlers[namespace] = {};
+            }
+            Object.entries(methods as Record<string, string>).forEach(
+                ([name, commandName]: [string, string]) => {
+                    handlers[namespace][name] = (...args: any[]) =>
+                        ipcRenderer.invoke(commandName, ...args);
+                }
+            );
         }
-        Object.entries(methods as Record<string, string>).forEach(([name, commandName]: [string, string]) => {
-            handlers[namespace][name] = (...args: any[]) => ipcRenderer.invoke(commandName, ...args);
-        })
-    })
-    contextBridge.exposeInMainWorld('db', handlers);
+    );
+    contextBridge.exposeInMainWorld("db", handlers);
 }
