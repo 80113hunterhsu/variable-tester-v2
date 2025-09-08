@@ -1,0 +1,42 @@
+#score_bar-wrapper {
+    width: 100%;
+    height: 56px;
+    position: relative;
+    margin: 0 auto;
+}
+
+#score_bar-current_score {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+#score_bar-indicator {
+    width: 100%;
+    height: 32px;
+    background: var(--bs-border-color);
+    border-radius: 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0 auto;
+}
+
+#score_bar-bar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 16px;
+    transition: all 0.2s;
+    opacity: 0.75;
+}
+
+#score_bar-indicator .score_bar-marker {
+    position: absolute;
+    top: 100%;
+    font-size: 14px;
+}
