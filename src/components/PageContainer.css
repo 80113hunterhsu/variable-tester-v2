@@ -1,6 +1,11 @@
 #page-container {
     min-height: 100vh;
     background-color: rgba(var(--bs-body-bg-rgb), 0.55);
+    overflow-x: hidden;
+}
+
+#page-container *:focus-visible {
+    outline: var(--bs-border-color) !important;
 }
 
 #content-container {
