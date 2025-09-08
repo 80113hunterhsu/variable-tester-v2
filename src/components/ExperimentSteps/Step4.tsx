@@ -1,9 +1,12 @@
 // node modules
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 // helpers
-import { checkRequiredFields } from "../../helpers/ExperimentStepsHelper";
+import {
+    checkRequiredFields,
+    bindEnterKey,
+} from "../../helpers/ExperimentStepsHelper";
 
 function renderContent(data: { [key: string]: any }) {
     return (
@@ -19,6 +22,8 @@ function renderContent(data: { [key: string]: any }) {
 export default function Step4({ data }: { data: { [key: string]: any } }) {
     const nav = useNavigate();
     const [content, setContent] = useState<JSX.Element | null>(null);
+    const nextBtnRef = useRef<HTMLAnchorElement>(null);
+    bindEnterKey(nextBtnRef);
     useEffect(() => {
         if (!checkRequiredFields(["subjectName", "variableName", "video"], data)) {
             nav("/experiment", { replace: true });
@@ -39,6 +44,7 @@ export default function Step4({ data }: { data: { [key: string]: any } }) {
                 <Link
                     className="btn btn-outline-primary btn-lg"
                     to={"/experiment/step/5"}
+                    ref={nextBtnRef}
                 >
                     Next
                 </Link>
