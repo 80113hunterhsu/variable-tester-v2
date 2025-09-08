@@ -11,3 +11,12 @@ export function checkRequiredFields(
     });
     return isChecked;
 }
+
+export function bindEnterKey(refBtn: any) {
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            refBtn?.current?.click();
+        }
+    });
+}
