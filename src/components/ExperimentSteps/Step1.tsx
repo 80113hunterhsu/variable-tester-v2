@@ -42,7 +42,7 @@ function nextStep(
  */
 export default function Step1({
     data,
-    updateData
+    updateData,
 }: {
     data: { [key: string]: any };
     updateData: (key: string, value: any) => void;
@@ -83,7 +83,11 @@ export default function Step1({
             <div className="d-flex flex-center">
                 <button
                     className="btn btn-outline-primary btn-lg"
-                    onClick={() => debounce(inputRefs, () => {nextStep(nav, data, inputRefs.current)})}
+                    onClick={() =>
+                        debounce(inputRefs, () => {
+                            nextStep(nav, data, inputRefs.current);
+                        })
+                    }
                     ref={nextBtnRef}
                 >
                     Next

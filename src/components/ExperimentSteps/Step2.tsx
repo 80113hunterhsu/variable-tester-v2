@@ -3,7 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 // helpers
-import { checkRequiredFields, bindEnterKey } from "../../helpers/ExperimentStepsHelper";
+import {
+    checkRequiredFields,
+    bindEnterKey,
+} from "../../helpers/ExperimentStepsHelper";
 
 function renderContent(data: { [key: string]: any }) {
     return (
