@@ -3,7 +3,8 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // helpers
-import { generateElementKey } from "../../helpers/Element";
+import { generateElementKey, debounce } from "../../helpers/Element";
+import { bindEnterKey } from "../../helpers/ExperimentStepsHelper";
 
 const inputList: Array<{ title: string; id: string }> = [
     { title: "Subject name", id: "subjectName" },
@@ -47,6 +48,8 @@ export default function Step1({
     updateData: (key: string, value: any) => void;
 }) {
     const inputRefs = useRef<{ [key: string]: HTMLInputElement }>({});
+    const nextBtnRef = useRef<HTMLButtonElement>(null);
+    bindEnterKey(nextBtnRef);
     const nav = useNavigate();
     return (
         <div className="row col-8 flex-center gap-3">
@@ -67,6 +70,7 @@ export default function Step1({
                             placeholder={input.title}
                             onChange={(e) => updateData(input.id, e.target.value)}
                             required
+                            autoFocus={input.id === "subjectName"}
                             ref={(el) => {
                                 if (el) {
                                     inputRefs.current[input.id] = el;
@@ -79,7 +83,8 @@ export default function Step1({
             <div className="d-flex flex-center">
                 <button
                     className="btn btn-outline-primary btn-lg"
-                    onClick={() => nextStep(nav, data, inputRefs.current)}
+                    onClick={() => debounce(inputRefs, () => {nextStep(nav, data, inputRefs.current)})}
+                    ref={nextBtnRef}
                 >
                     Next
                 </button>
