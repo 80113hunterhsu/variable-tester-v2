@@ -20,6 +20,7 @@ export default function Experiment() {
                 <h1 className="text-center">Experiment</h1>
                 <div className="row">
                     <div className="d-flex flex-center gap-lg-4 gap-3 flex-lg-row flex-column">
+                        <Link className="btn btn-outline-secondary btn-lg" to={"/settings"}>Settings</Link>
                         <Link className="btn btn-outline-primary btn-lg" to={"/experiment/step/1"}>Start</Link>
                     </div>
                 </div>
