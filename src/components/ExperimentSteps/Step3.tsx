@@ -3,7 +3,11 @@ import { useState, useRef, useEffect, RefObject } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 // helpers
-import { checkRequiredFields } from "../../helpers/ExperimentStepsHelper";
+import {
+    checkRequiredFields,
+    bindEnterKey,
+} from "../../helpers/ExperimentStepsHelper";
+import { debounce } from "../../helpers/Element";
 
 // styles
 import "./Step3.css";
@@ -56,6 +60,8 @@ export default function Step3({
     const dropZoneRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dropZoneText = useRef<HTMLInputElement>(null);
+    const nextBtnRef = useRef<HTMLButtonElement>(null);
+    bindEnterKey(nextBtnRef);
 
     useEffect(() => {
         if (!checkRequiredFields(["subjectName", "variableName"], data)) {
@@ -111,6 +117,7 @@ export default function Step3({
                 onClick={() => fileInputRef?.current?.click()}
                 onDragEnter={() => setIsDragOver(true)}
                 onDragLeave={() => setIsDragOver(false)}
+                autoFocus={true}
             >
                 <span ref={dropZoneText}>Click or drag an MP4 video here</span>
                 <input
@@ -130,7 +137,12 @@ export default function Step3({
                 </Link>
                 <button
                     className="btn btn-outline-primary btn-lg"
-                    onClick={() => nextStep(nav, data)}
+                    onClick={() =>
+                        debounce(nextBtnRef, () => {
+                            nextStep(nav, data);
+                        })
+                    }
+                    ref={nextBtnRef}
                 >
                     Next
                 </button>
