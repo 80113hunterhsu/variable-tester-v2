@@ -23,6 +23,44 @@ export function initDatabase(path: any, Database: any) {
 }
 
 export function initCommands(db: any) {
+    const typeMaps: Record<string, Record<string, string>> = {
+        settings: {
+            updateInterval: "number",
+            useNotifySound: "boolean",
+            notifySoundVolume: "number",
+            resetUnit: "number",
+            resetTimeout: "number",
+            resetInterval: "number",
+            isBidirectional: "boolean",
+            maxScore: "number",
+        },
+    };
+    const getTypedValue = (type: string, key: string, value: any) => {
+        if (!typeMaps[type][key] || value === undefined || value === null) {
+            return value;
+        }
+        switch (typeMaps.settings[key]) {
+            case "number":
+                return Number(value);
+            case "boolean":
+                return value === "1";
+            default:
+                return value;
+        }
+    };
+    const toString = (type: string, key: string, value: any) => {
+        if (!typeMaps[type][key] || value === undefined || value === null) {
+            return '';
+        }
+        switch (typeMaps.settings[key]) {
+            case "number":
+                return String(value);
+            case "boolean":
+                return value ? "1" : "0";
+            default:
+                return String(value);
+        }
+    }
     const commands = {
         experiments: {
             // 取得所有測試資料
@@ -33,10 +71,11 @@ export function initCommands(db: any) {
             get: (_: any, id: number) => {
                 return db.prepare("SELECT * FROM experiments WHERE id = ?").get(id);
             },
-            // 新增一筆測試資料
-            add: (
+            // 新增或更新一筆測試資料
+            set: (
                 _: any,
                 experiment: {
+                    id?: number;
                     subject_name: string;
                     variable_name: string;
                     video_name: string;
@@ -44,36 +83,30 @@ export function initCommands(db: any) {
                     result: string;
                 }
             ) => {
-                const stmt = db.prepare(
-                    "INSERT INTO experiments (subject_name, variable_name, video_name, result) VALUES (?, ?, ?, ?)"
-                );
+                const stmt = db.prepare(`
+                    INSERT INTO experiments (id, subject_name, variable_name, video_name, settings, result)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                        subject_name = excluded.subject_name,
+                        variable_name = excluded.variable_name,
+                        video_name   = excluded.video_name,
+                        settings     = excluded.settings,
+                        result       = excluded.result
+                `);
+
                 const info = stmt.run(
+                    experiment.id ?? null, // null → autoincrement if insert
                     experiment.subject_name,
                     experiment.variable_name,
                     experiment.video_name,
+                    experiment.settings,
                     experiment.result
                 );
-                return { id: info.lastInsertRowid };
-            },
-            // 更新一筆測試資料
-            update: (
-                _: any,
-                experiment: {
-                    subject_name: string;
-                    variable_name: string;
-                    result: string;
-                    id: number;
+
+                // If it was an insert, return the new id
+                if (!experiment.id) {
+                    return { id: info.lastInsertRowid };
                 }
-            ) => {
-                const stmt = db.prepare(
-                    "UPDATE experiments SET subject_name = ?, variable_name = ?, result = ? WHERE id = ?"
-                );
-                stmt.run(
-                    experiment.subject_name,
-                    experiment.variable_name,
-                    experiment.result,
-                    experiment.id
-                );
                 return { success: true };
             },
             // 刪除一筆測試資料
@@ -85,31 +118,39 @@ export function initCommands(db: any) {
         settings: {
             // 取得所有設定
             list: () => {
-                return db.prepare("SELECT * FROM settings").all();
+                const results = db.prepare("SELECT * FROM settings").all();
+                return results.reduce(
+                    (
+                        data: Record<string, string | number | boolean | any>,
+                        row: { key: string; value: string }
+                    ) => {
+                        data[row.key] = getTypedValue("settings", row.key, row.value);
+                        return data;
+                    },
+                    {}
+                );
             },
             // 取得一筆設定
             get: (_: any, key: string) => {
-                return db.prepare("SELECT * FROM settings WHERE key = ?").get(key);
+                const result = db
+                    .prepare("SELECT * FROM settings WHERE key = ?")
+                    .get(key);
+                return getTypedValue("settings", key, result?.value);
             },
-            // 新增一筆設定
-            add: (_: any, setting: { key: string; value: string }) => {
-                const stmt = db.prepare(
-                    "INSERT INTO settings (key, value) VALUES (?, ?)"
-                );
-                const info = stmt.run(setting.key, setting.value);
-                return { id: info.lastInsertRowid };
-            },
-            // 更新一筆設定
-            update: (_: any, setting: { key: string; value: string; id: number }) => {
-                const stmt = db.prepare(
-                    "UPDATE settings SET key = ?, value = ? WHERE id = ?"
-                );
-                stmt.run(setting.key, setting.value, setting.id);
+            // 設定或更新一筆設定
+            set: (_: any, setting: { key: string; value: any }) => {
+                const transformedValue = toString("settings", setting.key, setting.value);
+                const stmt = db.prepare(`
+                    INSERT INTO settings (key, value)
+                    VALUES (?, ?)
+                    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+                `);
+                stmt.run(setting.key, transformedValue);
                 return { success: true };
             },
             // 刪除一筆設定
-            delete: (_: any, id: number) => {
-                db.prepare("DELETE FROM settings WHERE id = ?").run(id);
+            delete: (_: any, key: string) => {
+                db.prepare("DELETE FROM settings WHERE key = ?").run(key);
                 return { success: true };
             },
         },

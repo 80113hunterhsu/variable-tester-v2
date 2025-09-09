@@ -9,17 +9,17 @@ import { checkRequiredFields } from "../../helpers/ExperimentStepsHelper";
 import RecordChart from "../RecordChart";
 import ModalEditScore from "../ModalEditScore";
 
-const isBidirectional = true;
-const maxScore = 10;
-
 function renderContent(
     data: { [key: string]: any },
     player: RefObject<HTMLVideoElement>,
     record: Record<string, { time: string; timeMS: string; score: number }>,
     updateRecord: (time: string, score: number) => void,
-    handlePointClick: (payload: any, key: string) => void
+    handlePointClick: (payload: any, key: string) => void,
+    settings: Record<string, any>
 ) {
     const isEditable = true;
+    const isBidirectional = settings.isBidirectional;
+    const maxScore = settings.maxScore;
     return (
         <div className="d-flex flex-column gap-3">
             <div className="d-flex flex-center">
@@ -64,9 +64,11 @@ function nextStep(nav: any, data: { [key: string]: any }) {
 export default function Step6({
     data,
     updateData,
+    settings,
 }: {
     data: { [key: string]: any };
     updateData: (key: string, value: any) => void;
+    settings: Record<string, any>;
 }) {
     const nav = useNavigate();
     const nextBtnRef = useRef<HTMLButtonElement>(null);
@@ -150,13 +152,15 @@ export default function Step6({
             nav("/experiment", { replace: true });
         } else {
             setContent(
-                renderContent(data, player, record, updateRecord, handlePointClick)
+                renderContent(data, player, record, updateRecord, handlePointClick, settings)
             );
         }
     };
     useEffect(processContentRender, []);
     useEffect(processContentRender, [record]);
 
+    const isBidirectional = settings.isBidirectional;
+    const maxScore = settings.maxScore;
     return (
         <div className="row col-12 flex-center gap-5">
             {content}

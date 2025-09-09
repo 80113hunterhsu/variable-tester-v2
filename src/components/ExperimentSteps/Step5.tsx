@@ -9,6 +9,7 @@ import RecordChart from "../RecordChart";
 import ScoreBar from "../ScoreBar";
 
 // helpers
+import { debounce } from "../../helpers/Element";
 import {
     checkRequiredFields,
     bindEnterKey,
@@ -16,21 +17,15 @@ import {
 import { sleep } from "../../helpers/Sleep";
 
 const requiredFields = ["subjectName", "variableName", "video"];
-// TODO: use experiment settings
-const updateInterval = 1000; // 取樣頻率（毫秒）
-const useNotifySound = true; // 是否使用聲音提示「閒置過久」
-const notifySoundVolume = 10; // 提示音量（0~100）
-const resetUnit = 1; // 重設單位（分數）
-const resetTimeout = 5000; // 重設延遲（毫秒）
-const resetInterval = 1000; // 重設頻率（毫秒）
-const isBidirectional = true; // 分數是否包含正負向，或僅有正向
-const maxScore = 10; // 分數最大值，負向分數最大值為 -maxScore
 
 function renderContent(
     data: { [key: string]: any },
     player: RefObject<HTMLVideoElement>,
-    record: Record<string, { time: string; timeMS: string; score: number }>
+    record: Record<string, { time: string; timeMS: string; score: number }>,
+    settings: Record<string, any>
 ) {
+    const isBidirectional = settings.isBidirectional;
+    const maxScore = settings.maxScore;
     return (
         <div className="d-flex flex-column gap-3">
             <div className="d-flex flex-center">
@@ -51,12 +46,13 @@ function renderContent(
     );
 }
 
-function notifySound(playSound: any) {
-    useNotifySound && playSound();
+function notifySound(settings: Record<string, any>, playSound: any) {
+    settings.useNotifySound && playSound();
 }
 
-function scoreCorrection(newScore: number) {
-    const minScore = isBidirectional ? -maxScore : 0;
+function scoreCorrection(settings: Record<string, any>, newScore: number) {
+    const maxScore = settings.maxScore;
+    const minScore = settings.isBidirectional ? -maxScore : 0;
     if (newScore > maxScore) {
         return maxScore;
     }
@@ -90,11 +86,11 @@ function clearResetTimer(resetTimerRef: any) {
     }
 }
 
-function updateRecord(time: number, score: number, setRecord: any) {
+function updateRecord(time: number, score: number, setRecord: any, settings: Record<string, any>) {
     const timeInMinutes = Math.trunc(time / 1000 / 60);
     const timeInSeconds = Math.trunc(time / 1000) % 60;
     const remainMillis = time % 1000;
-    const needMillis = updateInterval % 1000 !== 0 && remainMillis > 0;
+    const needMillis = settings.updateInterval % 1000 !== 0 && remainMillis > 0;
     const timeInSecondsAndMillis = `${Math.trunc(time / 1000)}${needMillis ? `.${remainMillis}` : ""
         }`;
     setRecord((prevRecord: object) => ({
@@ -116,6 +112,7 @@ function nextStep(
     autoResetIntervalRef: RefObject<NodeJS.Timeout | null>,
     resetTimerRef: RefObject<NodeJS.Timeout | null>
 ) {
+    console.log("Go to step 6");
     clearScoreSamplingInterval(intervalRef);
     clearResetInterval(autoResetIntervalRef);
     clearResetTimer(resetTimerRef);
@@ -129,13 +126,15 @@ function nextStep(
 export default function Step5({
     data,
     updateData,
+    settings,
 }: {
     data: { [key: string]: any };
     updateData: (key: string, value: any) => void;
+    settings: Record<string, any>;
 }) {
     const nav = useNavigate();
     const [playNotifySound] = useSound(beepSound, {
-        volume: notifySoundVolume / 100,
+        volume: settings.notifySoundVolume / 100,
     });
     const [content, setContent] = useState<JSX.Element | null>(null);
     const [record, setRecord] = useState<
@@ -160,7 +159,7 @@ export default function Step5({
         resetTimerRef.current = setTimeout(() => {
             // 時間內未操作，開始自動重設分數
             console.log("Start auto reset score");
-            notifySound(playNotifySound);
+            notifySound(settings, playNotifySound);
             autoResetIntervalRef.current = setInterval(() => {
                 console.log("Auto reset score");
                 setScore((prevScore) => {
@@ -168,11 +167,16 @@ export default function Step5({
                         clearResetInterval(autoResetIntervalRef);
                         return prevScore;
                     }
-                    const change = resetUnit * (prevScore > 0 ? -1 : 1);
-                    return scoreCorrection(prevScore + change);
+                    const change = settings.resetUnit * (prevScore > 0 ? -1 : 1);
+                    const newScore = prevScore + change;
+                    if (prevScore * newScore < 0) {
+                        // if resetting to a negative score, set to 0
+                        return 0;
+                    }
+                    return scoreCorrection(settings, newScore);
                 });
-            }, resetInterval);
-        }, resetTimeout);
+            }, settings.resetInterval);
+        }, settings.resetTimeout);
     };
 
     // Handle keydown events
@@ -204,7 +208,7 @@ export default function Step5({
         setScore((prevScore) => {
             const change = type === "+" ? 1 : -1;
             const newScore = prevScore + change;
-            return scoreCorrection(newScore);
+            return scoreCorrection(settings, newScore);
         });
         resetInactivityTimer();
     };
@@ -225,7 +229,7 @@ export default function Step5({
         if (!checkRequiredFields(requiredFields, data)) {
             nav("/experiment", { replace: true });
         } else {
-            setContent(renderContent(data, player, record));
+            setContent(renderContent(data, player, record, settings));
         }
     };
     useEffect(processContentRender, []); // Set the initial content
@@ -249,11 +253,11 @@ export default function Step5({
             intervalRef.current = setInterval(() => {
                 const currentTime = Math.trunc(video.currentTime * 1000);
                 const videoDuration = Math.trunc(video.duration * 1000);
-                updateRecord(currentTime, scoreRef.current, setRecord);
+                updateRecord(currentTime, scoreRef.current, setRecord, settings);
                 if (currentTime >= videoDuration) {
                     clearScoreSamplingInterval(intervalRef);
                 }
-            }, updateInterval);
+            }, settings.updateInterval);
         };
         handlePlay();
 
@@ -268,7 +272,8 @@ export default function Step5({
         };
     }, [player.current]);
 
-    // TODO: stop setInterval on clicking Next button
+    const isBidirectional = settings.isBidirectional;
+    const maxScore = settings.maxScore;
     return (
         <div className="row col-12 flex-center gap-5">
             {content}
@@ -301,14 +306,16 @@ export default function Step5({
                 <button
                     className="btn btn-outline-primary btn-lg"
                     onClick={() =>
-                        nextStep(
-                            nav,
-                            record,
-                            updateData,
-                            intervalRef,
-                            autoResetIntervalRef,
-                            resetTimerRef
-                        )
+                        debounce(nextBtnRef, () => {
+                            nextStep(
+                                nav,
+                                record,
+                                updateData,
+                                intervalRef,
+                                autoResetIntervalRef,
+                                resetTimerRef
+                            )
+                        })
                     }
                     ref={nextBtnRef}
                 >
