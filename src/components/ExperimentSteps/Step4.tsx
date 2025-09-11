@@ -25,7 +25,7 @@ export default function Step4({ data }: { data: { [key: string]: any } }) {
     const nextBtnRef = useRef<HTMLAnchorElement>(null);
     bindEnterKey(nextBtnRef);
     useEffect(() => {
-        if (!checkRequiredFields(["subjectName", "variableName", "video"], data)) {
+        if (!checkRequiredFields(["settings", "subjectName", "variableName", "video"], data)) {
             nav("/experiment", { replace: true });
         } else {
             setContent(renderContent(data));

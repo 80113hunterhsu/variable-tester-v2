@@ -64,7 +64,7 @@ export default function Step3({
     bindEnterKey(nextBtnRef);
 
     useEffect(() => {
-        if (!checkRequiredFields(["subjectName", "variableName"], data)) {
+        if (!checkRequiredFields(["settings", "subjectName", "variableName"], data)) {
             nav("/experiment", { replace: true });
         } else {
             setContent(renderContent(data));

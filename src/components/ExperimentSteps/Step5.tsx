@@ -16,7 +16,7 @@ import {
 } from "../../helpers/ExperimentStepsHelper";
 import { sleep } from "../../helpers/Sleep";
 
-const requiredFields = ["subjectName", "variableName", "video"];
+const requiredFields = ["settings", "subjectName", "variableName", "video"];
 
 function renderContent(
     data: { [key: string]: any },
@@ -126,12 +126,11 @@ function nextStep(
 export default function Step5({
     data,
     updateData,
-    settings,
 }: {
     data: { [key: string]: any };
     updateData: (key: string, value: any) => void;
-    settings: Record<string, any>;
 }) {
+    const settings = data.settings;
     const nav = useNavigate();
     const [playNotifySound] = useSound(beepSound, {
         volume: settings.notifySoundVolume / 100,

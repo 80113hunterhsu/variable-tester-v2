@@ -9,6 +9,8 @@ import { checkRequiredFields } from "../../helpers/ExperimentStepsHelper";
 import RecordChart from "../RecordChart";
 import ModalEditScore from "../ModalEditScore";
 
+const requiredFields = ["settings", "subjectName", "variableName", "video", "record"];
+
 function renderContent(
     data: { [key: string]: any },
     player: RefObject<HTMLVideoElement>,
@@ -64,12 +66,11 @@ function nextStep(nav: any, data: { [key: string]: any }) {
 export default function Step6({
     data,
     updateData,
-    settings,
 }: {
     data: { [key: string]: any };
     updateData: (key: string, value: any) => void;
-    settings: Record<string, any>;
 }) {
+    const settings = data.settings;
     const nav = useNavigate();
     const nextBtnRef = useRef<HTMLButtonElement>(null);
     const player = useRef<HTMLVideoElement>(null);
@@ -143,12 +144,7 @@ export default function Step6({
 
     // bindEnterKey(nextBtnRef);
     const processContentRender = () => {
-        if (
-            !checkRequiredFields(
-                ["subjectName", "variableName", "video", "record"],
-                data
-            )
-        ) {
+        if (!checkRequiredFields(requiredFields, data)) {
             nav("/experiment", { replace: true });
         } else {
             setContent(

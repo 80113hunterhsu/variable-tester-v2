@@ -23,9 +23,7 @@ function renderStep(
     data: { [key: string]: any },
     updateData: (key: string, value: any) => void,
     nav: any,
-    settings: Record<string, any>,
 ): JSX.Element {
-    console.log("data: ", data);
     switch (step) {
         case "1":
             // Step 1: Enter test subject name and tested variable name
@@ -41,10 +39,10 @@ function renderStep(
             return <Step4 {...{ data, updateData }} />;
         case "5":
             // Step 5: Conduct the experiment by recording scores
-            return <Step5 {...{ data, updateData, settings }} />;
+            return <Step5 {...{ data, updateData }} />;
         case "6":
             // Step 6: Review and edit recorded scores before submission
-            return <Step6 {...{ data, updateData, settings }} />;
+            return <Step6 {...{ data, updateData }} />;
         default:
             nav("/experiment", { replace: true });
             return <></>;
@@ -86,17 +84,21 @@ export default function ExperimentSteps() {
     }, []);
 
     // Render content
-    const [content, setContent] = useState<JSX.Element | null>(null);
+    useEffect(() => {
+        updateData('settings', settings);
+    }, [settings]);
     useEffect(() => {
         console.log("Step: ", step);
-        setContent(renderStep(step || "0", data, updateData, nav, settings));
-    }, [step, data, settings]);
+    }, [step]);
+    useEffect(() => {
+        console.log("Data: ", data); 
+    }, [data]);
 
     setSubtitle(`Experiment - Step ${step}`);
     return (
         <PageContainer navbarLinks={links}>
             <div className="d-flex flex-center flex-column gap-lg-4 gap-3 col-12">
-                {content}
+                {renderStep(step || "0", data, updateData, nav)}
             </div>
         </PageContainer>
     );
