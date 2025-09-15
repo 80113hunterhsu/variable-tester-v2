@@ -15,11 +15,13 @@ import { NavbarLink } from "../types/Navbar/NavbarTypes";
 type PageContainerProps = {
     navbarLinks: NavbarLink[];
     children: React.ReactNode;
+    centered?: boolean;
 };
 
 export default function PageContainer({
     navbarLinks,
     children,
+    centered = true
 }: PageContainerProps) {
     const classes: string[] = [
         "container-fluid",
@@ -36,7 +38,7 @@ export default function PageContainer({
             <Navbar navbarLinks={navbarLinks} />
 
             {/* 內容區塊 */}
-            <div id="content-container" className="px-4 py-3 d-flex flex-center shadow-sm">
+            <div id="content-container" className={`px-4 py-3 d-flex flex-${centered ? 'center' : 'column'} shadow-sm`}>
                 {children}
             </div>
 
