@@ -156,7 +156,7 @@ export default function Settings() {
     useEffect(() => console.log("settings changed: ", settings), [settingsChanged]);
 
     return (
-        <PageContainer navbarLinks={links}>
+        <PageContainer navbarLinks={links} centered={false}>
             <div className="d-flex flex-center flex-column gap-lg-4 gap-3 col-12">
                 <div className="d-flex flex-column flex-center">
                     <h1 className="text-center">Settings</h1>
