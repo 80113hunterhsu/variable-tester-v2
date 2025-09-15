@@ -9,7 +9,7 @@ import { checkRequiredFields } from "../../helpers/ExperimentStepsHelper";
 import RecordChart from "../RecordChart";
 import ModalEditScore from "../ModalEditScore";
 
-const requiredFields = ["settings", "subjectName", "variableName", "video", "record"];
+const requiredFields = ["settings", "subject_name", "variable_name", "video", "record"];
 
 function renderContent(
     data: { [key: string]: any },
@@ -52,11 +52,19 @@ function renderContent(
 }
 
 // TODO: finish nav to result page with dedicated result id
-function nextStep(nav: any, data: { [key: string]: any }) {
-    // Here you would typically handle saving the data to a database or backend
-    console.log("Final data to be saved:", data);
-    // For now, we'll just navigate to a hypothetical results page
-    nav("/results");
+async function nextStep(nav: any, data: Record<string, any>) {
+    const experiment = {
+        subject_name: data.subject_name,
+        variable_name: data.variable_name,
+        video_name: data.video.name,
+        video_path: data.video.path,
+        settings: data.settings,
+        record: data.record,
+    };
+    const result = await window.db.experiments.set(experiment);
+    console.log("result: ", result);
+    
+    // nav("/results");
 }
 
 /**
@@ -154,6 +162,9 @@ export default function Step6({
     };
     useEffect(processContentRender, []);
     useEffect(processContentRender, [record]);
+    useEffect(() => {
+        updateData("record", record);
+    }, [record]);
 
     const isBidirectional = settings.isBidirectional;
     const maxScore = settings.maxScore;

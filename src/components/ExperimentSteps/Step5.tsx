@@ -16,7 +16,7 @@ import {
 } from "../../helpers/ExperimentStepsHelper";
 import { sleep } from "../../helpers/Sleep";
 
-const requiredFields = ["settings", "subjectName", "variableName", "video"];
+const requiredFields = ["settings", "subject_name", "variable_name", "video"];
 
 function renderContent(
     data: { [key: string]: any },

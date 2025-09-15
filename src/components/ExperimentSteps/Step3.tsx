@@ -15,8 +15,8 @@ import "./Step3.css";
 function renderContent(data: { [key: string]: any }) {
     return (
         <div className="d-flex flex-center flex-column">
-            <h4>Name: {data.subjectName}</h4>
-            <h4>Variable: {data.variableName}</h4>
+            <h4>Name: {data.subject_name}</h4>
+            <h4>Variable: {data.variable_name}</h4>
         </div>
     );
 }
@@ -64,7 +64,7 @@ export default function Step3({
     bindEnterKey(nextBtnRef);
 
     useEffect(() => {
-        if (!checkRequiredFields(["settings", "subjectName", "variableName"], data)) {
+        if (!checkRequiredFields(["settings", "subject_name", "variable_name"], data)) {
             nav("/experiment", { replace: true });
         } else {
             setContent(renderContent(data));

@@ -7,8 +7,8 @@ import { generateElementKey, debounce } from "../../helpers/Element";
 import { bindEnterKey } from "../../helpers/ExperimentStepsHelper";
 
 const inputList: Array<{ title: string; id: string }> = [
-    { title: "Subject name", id: "subjectName" },
-    { title: "Variable name", id: "variableName" },
+    { title: "Subject name", id: "subject_name" },
+    { title: "Variable name", id: "variable_name" },
 ];
 
 function nextStep(
@@ -70,7 +70,7 @@ export default function Step1({
                             placeholder={input.title}
                             onChange={(e) => updateData(input.id, e.target.value)}
                             required
-                            autoFocus={input.id === "subjectName"}
+                            autoFocus={input.id === "subject_name"}
                             ref={(el) => {
                                 if (el) {
                                     inputRefs.current[input.id] = el;

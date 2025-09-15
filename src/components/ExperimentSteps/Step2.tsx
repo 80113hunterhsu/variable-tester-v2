@@ -12,21 +12,21 @@ function renderContent(data: { [key: string]: any }) {
     return (
         <>
             <p className="fs-5">
-                Hello, <strong>{data.subjectName}</strong>. Today, we will be testing
-                for a level of <strong>{data.variableName}</strong>.
+                Hello, <strong>{data.subject_name}</strong>. Today, we will be testing
+                for a level of <strong>{data.variable_name}</strong>.
             </p>
             <p className="fs-5">
-                When you feel the most of {data.variableName.toLowerCase()}, press the
+                When you feel the most of {data.variable_name.toLowerCase()}, press the
                 Increase button (or key N), which is marked with <code>+</code>.
                 Alternately, when you are feeling less of{" "}
-                {data.variableName.toLowerCase()}, press the Decrease button (or key V),
+                {data.variable_name.toLowerCase()}, press the Decrease button (or key V),
                 marked with <code>-</code>.
             </p>
             <p className="fs-5">
                 There will be an onscreen graphical representation of the level you are
                 feeling, at the right side of the video. This bar will default to 0,
                 over time. So, if you are feeling a lot of{" "}
-                {data.variableName.toLowerCase()}, don't feel afraid to repeatedly hit
+                {data.variable_name.toLowerCase()}, don't feel afraid to repeatedly hit
                 the mouse, click like wild!
             </p>
         </>
@@ -42,7 +42,7 @@ export default function Step2({ data }: { data: { [key: string]: any } }) {
     const nextBtnRef = useRef<HTMLAnchorElement>(null);
     bindEnterKey(nextBtnRef);
     useEffect(() => {
-        if (!checkRequiredFields(["settings", "subjectName", "variableName"], data)) {
+        if (!checkRequiredFields(["settings", "subject_name", "variable_name"], data)) {
             nav("/experiment", { replace: true });
         } else {
             setContent(renderContent(data));
