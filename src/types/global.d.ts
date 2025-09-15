@@ -6,11 +6,28 @@ interface Window {
                 subject_name: string;
                 variable_name: string;
                 video_name: string;
+                video_path: string;
                 settings: string;
-                result: string;
+                record: string;
             }[];
-            get: (id: number) => any;
-            set: (experiment: any) => any;
+            get: (id: number) => {
+                id: number;
+                subject_name: string;
+                variable_name: string;
+                video_name: string;
+                video_path: string;
+                settings: string;
+                record: string;
+            };
+            set: (experiment: {
+                id?: number | null;
+                subject_name: string;
+                variable_name: string;
+                video_name: string;
+                video_path: string;
+                settings: string;
+                record: string;
+            }) => any;
             delete: (id: number) => any;
         };
         settings: {

@@ -10,8 +10,9 @@ export function initDatabase(path: any, Database: any) {
             subject_name TEXT NOT NULL,
             variable_name TEXT NOT NULL,
             video_name TEXT NOT NULL,
+            video_path TEXT NOT NULL,
             settings TEXT NOT NULL,
-            result TEXT NOT NULL,
+            record TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS settings (
@@ -24,6 +25,15 @@ export function initDatabase(path: any, Database: any) {
 
 export function initCommands(db: any) {
     const typeMaps: Record<string, Record<string, string>> = {
+        experiments: {
+            id: "number",
+            subject_name: "string",
+            variable_name: "string",
+            video_name: "string",
+            video_path: "string",
+            settings: "json",
+            record: "json",
+        },
         settings: {
             updateInterval: "number",
             useNotifySound: "boolean",
@@ -39,18 +49,20 @@ export function initCommands(db: any) {
         if (!typeMaps[type][key] || value === undefined || value === null) {
             return value;
         }
-        switch (typeMaps.settings[key]) {
+        switch (typeMaps[type][key]) {
             case "number":
                 return Number(value);
             case "boolean":
                 return value === "1";
+            case "json":
+                return JSON.parse(value);
             default:
                 return value;
         }
     };
     const toString = (type: string, key: string, value: any) => {
         if (!typeMaps[type][key] || value === undefined || value === null) {
-            return '';
+            return "";
         }
         switch (typeMaps.settings[key]) {
             case "number":
@@ -60,38 +72,59 @@ export function initCommands(db: any) {
             default:
                 return String(value);
         }
-    }
+    };
     const commands = {
         experiments: {
             // 取得所有測試資料
             list: () => {
-                return db.prepare("SELECT * FROM experiments").all();
+                const results = db.prepare("SELECT * FROM experiments").all();
+                return results.reduce((data: Record<string, any>, result: any) => {
+                    data[result.id] = Object.entries(result).reduce(
+                        (newResult: any, [key, value]: [string, any]) => {
+                            newResult[key] = getTypedValue("experiments", key, value);
+                            return newResult;
+                        },
+                        {}
+                    );
+                    return data;
+                }, {});
             },
             // 取得一筆測試資料
             get: (_: any, id: number) => {
-                return db.prepare("SELECT * FROM experiments WHERE id = ?").get(id);
+                const result = db
+                    .prepare("SELECT * FROM experiments WHERE id = ?")
+                    .get(id);
+                return Object.entries(result).reduce(
+                    (newResult: any, [key, value]: [string, any]) => {
+                        newResult[key] = getTypedValue("experiments", key, value);
+                        return newResult;
+                    },
+                    {}
+                );
             },
             // 新增或更新一筆測試資料
             set: (
                 _: any,
                 experiment: {
-                    id?: number;
+                    id?: number | null;
                     subject_name: string;
                     variable_name: string;
                     video_name: string;
+                    video_path: string;
                     settings: string;
-                    result: string;
+                    record: string;
                 }
             ) => {
                 const stmt = db.prepare(`
-                    INSERT INTO experiments (id, subject_name, variable_name, video_name, settings, result)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO experiments (id, subject_name, variable_name, video_name, video_path, settings, record)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(id) DO UPDATE SET
                         subject_name = excluded.subject_name,
                         variable_name = excluded.variable_name,
                         video_name   = excluded.video_name,
+                        video_path   = excluded.video_path,
                         settings     = excluded.settings,
-                        result       = excluded.result
+                        record       = excluded.record
                 `);
 
                 const info = stmt.run(
@@ -99,13 +132,14 @@ export function initCommands(db: any) {
                     experiment.subject_name,
                     experiment.variable_name,
                     experiment.video_name,
-                    experiment.settings,
-                    experiment.result
+                    experiment.video_path,
+                    JSON.stringify(experiment.settings),
+                    JSON.stringify(experiment.record)
                 );
 
                 // If it was an insert, return the new id
                 if (!experiment.id) {
-                    return { id: info.lastInsertRowid };
+                    return { success: true, id: info.lastInsertRowid };
                 }
                 return { success: true };
             },
@@ -139,7 +173,11 @@ export function initCommands(db: any) {
             },
             // 設定或更新一筆設定
             set: (_: any, setting: { key: string; value: any }) => {
-                const transformedValue = toString("settings", setting.key, setting.value);
+                const transformedValue = toString(
+                    "settings",
+                    setting.key,
+                    setting.value
+                );
                 const stmt = db.prepare(`
                     INSERT INTO settings (key, value)
                     VALUES (?, ?)
