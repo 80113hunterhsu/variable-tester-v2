@@ -34,6 +34,8 @@ export default function RecordChart({
     updateRecord,
     isEditable = false,
     handlePointClick,
+    refChart,
+    setBrushRange
 }: {
     record: Record<string, { time: string; timeMS: string; score: number }>;
     isBidirectional: boolean;
@@ -41,6 +43,8 @@ export default function RecordChart({
     updateRecord?: (time: string, score: number) => void | undefined;
     isEditable?: boolean | undefined;
     handlePointClick?: (payload: any, key: string) => void | undefined;
+    refChart?: React.RefObject<SVGSVGElement> | undefined;
+    setBrushRange?: (brushRange: {start?: number; end?: number}) => void | undefined;
 }) {
     const [data, setData] = useState(processRecordToChartData(record));
     useEffect(() => {
@@ -51,57 +55,62 @@ export default function RecordChart({
     const isClickable: boolean =
         !!isEditable && !!updateRecord && !!handlePointClick;
 
+    const handleBrushChange = (range: any) => {
+        const brushRange: Record<string, number> = {};
+        brushRange.start = range.startIndex || 0;
+        brushRange.end = range.endIndex || data.length - 1;
+        setBrushRange && setBrushRange(brushRange);
+    };
+
     return (
-        <>
-            <ResponsiveContainer width="100%" height={400}>
-                <ComposedChart data={data}>
-                    <Line
-                        dataKey="score"
-                        isAnimationActive={false}
-                        dot={({ cx, cy, payload, index }) => (
-                            <circle
-                                key={generateElementKey(`dot-${payload.key}-${index}`)}
-                                cx={cx}
-                                cy={cy}
-                                r={isClickable ? 10 : 5}
-                                stroke="blue"
-                                strokeWidth={2}
-                                fill="white"
-                                onClick={() => {
-                                    if (!isClickable || !handlePointClick) return;
-                                    handlePointClick(
-                                        payload as {
-                                            time: string;
-                                            timeMS: string;
-                                            score: number;
-                                        },
-                                        payload.key
-                                    );
-                                }}
-                                style={{ cursor: "pointer" }}
-                            />
-                        )}
-                    />
-                    <XAxis
-                        tickSize={30}
-                        height={60}
-                        interval={"equidistantPreserveStart"}
-                        dataKey="timeMS"
-                    />
-                    <YAxis domain={[minScore, maxScore]} />
-                    <CartesianGrid strokeDasharray="3 3" />
-                    {isBidirectional && (
-                        <ReferenceLine y={0} strokeWidth={2.5} strokeDasharray="0" />
+        <ResponsiveContainer width="100%" height={400} className="">
+            <ComposedChart data={data} ref={refChart}>
+                <Line
+                    dataKey="score"
+                    isAnimationActive={false}
+                    dot={({ cx, cy, payload, index }) => (
+                        <circle
+                            key={generateElementKey(`dot-${payload.key}-${index}`)}
+                            cx={cx}
+                            cy={cy}
+                            r={isClickable ? 10 : 5}
+                            stroke="blue"
+                            strokeWidth={2}
+                            fill="white"
+                            onClick={() => {
+                                if (!isClickable || !handlePointClick) return;
+                                handlePointClick(
+                                    payload as {
+                                        time: string;
+                                        timeMS: string;
+                                        score: number;
+                                    },
+                                    payload.key
+                                );
+                            }}
+                            style={{ cursor: isClickable ? "pointer" : "default" }}
+                        />
                     )}
-                    <Tooltip cursor={false} wrapperStyle={{ pointerEvents: "none" }} />
-                    <Legend />
-                    <Brush fill="#ccc" gap={1} travellerWidth={5}>
-                        <ComposedChart data={data}>
-                            <Line dataKey="score" isAnimationActive={false} />
-                        </ComposedChart>
-                    </Brush>
-                </ComposedChart>
-            </ResponsiveContainer>
-        </>
+                />
+                <XAxis
+                    tickSize={30}
+                    height={60}
+                    interval={"equidistantPreserveStart"}
+                    dataKey="timeMS"
+                />
+                <YAxis domain={[minScore, maxScore]} />
+                <CartesianGrid strokeDasharray="3 3" />
+                {isBidirectional && (
+                    <ReferenceLine y={0} strokeWidth={2.5} strokeDasharray="0" />
+                )}
+                <Tooltip cursor={false} wrapperStyle={{ pointerEvents: "none" }} />
+                <Legend />
+                <Brush fill="#ccc" gap={1} travellerWidth={5} onChange={handleBrushChange}>
+                    <ComposedChart data={data}>
+                        <Line dataKey="score" isAnimationActive={false} />
+                    </ComposedChart>
+                </Brush>
+            </ComposedChart>
+        </ResponsiveContainer>
     );
 }
