@@ -64,7 +64,7 @@ async function nextStep(nav: any, data: Record<string, any>) {
     const result = await window.db.experiments.set(experiment);
     console.log("result: ", result);
     
-    // nav("/results");
+    nav(`/results/${result.id}/view`);
 }
 
 /**

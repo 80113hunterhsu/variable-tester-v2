@@ -86,7 +86,12 @@ function clearResetTimer(resetTimerRef: any) {
     }
 }
 
-function updateRecord(time: number, score: number, setRecord: any, settings: Record<string, any>) {
+function updateRecord(
+    time: number,
+    score: number,
+    setRecord: any,
+    settings: Record<string, any>
+) {
     const timeInMinutes = Math.trunc(time / 1000 / 60);
     const timeInSeconds = Math.trunc(time / 1000) % 60;
     const remainMillis = time % 1000;
@@ -130,8 +135,8 @@ export default function Step5({
     data: { [key: string]: any };
     updateData: (key: string, value: any) => void;
 }) {
-    const settings = data.settings;
     const nav = useNavigate();
+    const settings = data.settings;
     const [playNotifySound] = useSound(beepSound, {
         volume: settings.notifySoundVolume / 100,
     });
@@ -181,23 +186,27 @@ export default function Step5({
     // Handle keydown events
     const handleKeyDown = (e: KeyboardEvent) => {
         const timeout = 50;
-        const allowedInputs: Record<string, any> = {
-            v: async () => {
-                scoreMinusRef.current?.focus();
-                await sleep(timeout);
-                scoreMinusRef.current?.click();
-                await sleep(timeout);
-                scoreMinusRef.current?.blur();
-            },
-            n: async () => {
-                scorePlusRef.current?.focus();
-                await sleep(timeout);
-                scorePlusRef.current?.click();
-                await sleep(timeout);
-                scorePlusRef.current?.blur();
-            },
+        const scoreUp = async () => {
+            scorePlusRef.current?.focus();
+            await sleep(timeout);
+            scorePlusRef.current?.click();
+            await sleep(timeout);
+            scorePlusRef.current?.blur();
         };
-        if (e.key in allowedInputs) {
+        const scoreDown = async () => {
+            scoreMinusRef.current?.focus();
+            await sleep(timeout);
+            scoreMinusRef.current?.click();
+            await sleep(timeout);
+            scoreMinusRef.current?.blur();
+        };
+        const allowedInputs: Record<string, any> = {
+            v: scoreDown,
+            n: scoreUp,
+            ArrowLeft: scoreDown,
+            ArrowRight: scoreUp,
+        };
+        if (allowedInputs[e.key]) {
             e.preventDefault();
             allowedInputs[e.key]();
         }
@@ -239,6 +248,15 @@ export default function Step5({
         const video = player.current;
         if (!video) {
             return;
+        }
+
+        // 初始化分數紀錄 by 時間單位
+        for (
+            let t = 0;
+            t <= Math.trunc(video.duration * 1000);
+            t += settings.updateInterval
+        ) {
+            updateRecord(t, 0, setRecord, settings);
         }
 
         // 暫停時清除 interval
@@ -313,7 +331,7 @@ export default function Step5({
                                 intervalRef,
                                 autoResetIntervalRef,
                                 resetTimerRef
-                            )
+                            );
                         })
                     }
                     ref={nextBtnRef}
