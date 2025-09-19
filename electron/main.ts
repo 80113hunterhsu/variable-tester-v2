@@ -2,7 +2,9 @@ import { app, BrowserWindow } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { initDatabase, initCommands } from './libraries/db.js'
+import * as fs from "fs";
+import { initDatabase, initDBCommands } from './libraries/db.js'
+import { initExportCommands } from './libraries/export.js'
 
 const require = createRequire(import.meta.url);
 const Database = require('better-sqlite3');
@@ -69,5 +71,6 @@ let db: any
 app.whenReady().then(() => {
   db = initDatabase(path, Database);
   createWindow();
-  initCommands(db);
+  initDBCommands(db);
+  initExportCommands(fs);
 })

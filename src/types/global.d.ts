@@ -37,4 +37,8 @@ interface Window {
             delete: (key: string) => any;
         };
     };
+    export: {
+        csv: (filename: string, data: any) => {success: boolean, path?: string};
+        image: (filename: string, dataURL: string, format: string) => {success: boolean, path?: string};
+    }
 }

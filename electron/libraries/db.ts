@@ -23,7 +23,7 @@ export function initDatabase(path: any, Database: any) {
     return db;
 }
 
-export function initCommands(db: any) {
+export function initDBCommands(db: any) {
     const typeMaps: Record<string, Record<string, string>> = {
         experiments: {
             id: "number",
@@ -211,7 +211,7 @@ export function initCommands(db: any) {
     ipcMain.handle("db:getHandlers", () => handlers);
 }
 
-export async function exposeHandlers(
+export async function exposeDBHandlers(
     ipcRenderer: Electron.IpcRenderer,
     contextBridge: Electron.ContextBridge
 ) {
