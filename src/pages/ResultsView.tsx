@@ -16,21 +16,29 @@ import "./ResultsView.css";
 import { generateElementKey } from "../helpers/Element";
 import { svgToCanvas } from "../helpers/SvgToCanvas";
 
-function renderExperimentDetails(experiment: Record<string, any>) {
+function renderExperimentDetails(experiment: Record<string, any>, nav: any) {
+    const handleDelete = (e: any) => {
+        e.preventDefault();
+        window.db.experiments.delete(experiment.id);
+        nav("/results");
+    };
+    const styles = {
+        verticalAlign: "middle",
+    };
     return (
         <table className="table table-hover table-bordered">
             <tbody>
                 <tr>
-                    <th className="text-center">Subject Name</th>
-                    <td className="px-3">{experiment.subject_name}</td>
+                    <th className="text-center" style={styles}>Subject Name</th>
+                    <td className="px-3" style={styles}>{experiment.subject_name}</td>
                 </tr>
                 <tr>
-                    <th className="text-center">Variable Name</th>
-                    <td className="px-3">{experiment.variable_name}</td>
+                    <th className="text-center" style={styles}>Variable Name</th>
+                    <td className="px-3" style={styles}>{experiment.variable_name}</td>
                 </tr>
                 <tr>
-                    <th className="text-center">Experiment Date</th>
-                    <td className="px-3">
+                    <th className="text-center" style={styles}>Experiment Date</th>
+                    <td className="px-3" style={styles}>
                         {new Date(
                             `${experiment.created_at.replace(" ", "T")}Z`
                         ).toLocaleString("zh-TW", {
@@ -40,8 +48,18 @@ function renderExperimentDetails(experiment: Record<string, any>) {
                     </td>
                 </tr>
                 <tr>
-                    <th className="text-center">Video Name</th>
-                    <td className="px-3">{experiment.video_name}</td>
+                    <th className="text-center style={styles}">Video Name</th>
+                    <td className="px-3 style={styles}">{experiment.video_name}</td>
+                </tr>
+                <tr>
+                    <th className="text-center" style={styles}>Actions</th>
+                    <td className="px-3 style={styles}">
+                        <div className="d-flex gap-3">
+                            <button className="btn btn-outline-danger" onClick={handleDelete}>
+                                Delete
+                            </button>
+                        </div>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -134,7 +152,7 @@ export default function ResultsView() {
         if (Object.keys(experiment).length === 0) {
             return;
         }
-        setExperimentDetails(renderExperimentDetails(experiment));
+        setExperimentDetails(renderExperimentDetails(experiment, nav));
         setBrushRange({start: 0, end: Object.keys(experiment.record || {}).length - 1});
         setChart(renderChart(experiment, refChart, setBrushRange));
         setSettingsTable(renderSettingsTable(experiment.settings));

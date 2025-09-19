@@ -22,34 +22,40 @@ function renderStep(
     step: string,
     data: { [key: string]: any },
     updateData: (key: string, value: any) => void,
-    nav: any,
-): JSX.Element {
+    setEleStep: (ele: JSX.Element | null) => void
+): boolean {
+    if (
+        (["5", "6"].includes(step) && !data.settings)
+    ) {
+        step = "0"; // redirect to step 0 if settings not loaded
+    }
     switch (step) {
         case "1":
             // Step 1: Enter test subject name and tested variable name
-            return <Step1 {...{ data, updateData }} />;
+            setEleStep(<Step1 {...{ data, updateData }} />);
+            return true;
         case "2":
             // Step 2: Show test information and instructions
-            return <Step2 {...{ data }} />;
+            setEleStep(<Step2 {...{ data }} />);
+            return true;
         case "3":
             // Step 3: Select video file
-            return <Step3 {...{ data, updateData }} />;
+            setEleStep(<Step3 {...{ data, updateData }} />);
+            return true;
         case "4":
             // Step 4: Preview video and prepare for the start of the experiment
-            return <Step4 {...{ data, updateData }} />;
+            setEleStep(<Step4 {...{ data, updateData }} />);
+            return true;
         case "5":
             // Step 5: Conduct the experiment by recording scores
-            if (data.settings) {
-                return <Step5 {...{ data, updateData }} />;
-            }
+            setEleStep(<Step5 {...{ data, updateData }} />);
+            return true;
         case "6":
             // Step 6: Review and edit recorded scores before submission
-            if (data.settings) {
-                return <Step6 {...{ data, updateData }} />;
-            }
+            setEleStep(<Step6 {...{ data, updateData }} />);
+            return true;
         default:
-            nav("/experiment", { replace: true });
-            return <></>;
+            return false;
     }
 }
 
@@ -65,6 +71,7 @@ export default function ExperimentSteps() {
     const updateData = (key: string, value: any) => {
         setData((prevData) => ({ ...prevData, [key]: value }));
     };
+    const [eleStep, setEleStep] = useState<JSX.Element | null>(<></>);
 
     // Get settings
     const [settings, setSettings] = useState<Record<string, any>>({});
@@ -92,20 +99,25 @@ export default function ExperimentSteps() {
         if (Object.keys(settings).length === 0) {
             return;
         }
-        updateData('settings', settings);
+        updateData("settings", settings);
     }, [settings]);
     useEffect(() => {
         console.log("Step: ", step);
     }, [step]);
     useEffect(() => {
-        console.log("Data: ", data); 
+        console.log("Data: ", data);
     }, [data]);
+    useEffect(() => {
+        if (!renderStep(step || "0", data, updateData, setEleStep)) {
+            nav("/experiment", { replace: true });
+        }
+    }, [settings, step, data]);
 
     setSubtitle(`Experiment - Step ${step}`);
     return (
         <PageContainer navbarLinks={links}>
             <div className="d-flex flex-center flex-column gap-lg-4 gap-3 col-12">
-                {renderStep(step || "0", data, updateData, nav)}
+                {eleStep}
             </div>
         </PageContainer>
     );

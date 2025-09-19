@@ -26,22 +26,27 @@ export default function Settings() {
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [settingsChanged, setSettingsChanged] = useState(false);
 
+    const updateSettings = (key: string, value: any) => {
+        setSettings((prevSettings: Record<string, any>) => ({
+            ...prevSettings,
+            [key]: value,
+        }));
+        setSettingsChanged(true);
+    };
+
     useEffect(() => {
         (async () => {
             const rawResults = await window.db.settings.list();
             const rawResultsCount = Object.keys(rawResults).length;
             const isAllUsingDefaultValue = rawResultsCount === 0;
-            const results: Record<string, any> = {};
             Object.entries(settingKeys).forEach(([key, info]) => {
                 const isUsingDefaultValue = rawResults[key] === undefined;
                 const value = !isUsingDefaultValue ? rawResults[key] : info.default;
                 if (!isAllUsingDefaultValue && isUsingDefaultValue) {
                     console.log(`${key} is using default value`);
                 }
-                results[key] = value;
+                updateSettings(key, value);
             });
-            console.log("settings: ", results);
-            setSettings(results);
             setSettingsLoaded(true);
         })();
     }, []);
@@ -49,6 +54,7 @@ export default function Settings() {
         if (Object.keys(settings).length === 0) {
             return;
         }
+        console.log("settings update: ", settings);
         setEleTable(
             <SettingsTable
                 {...{
@@ -61,12 +67,26 @@ export default function Settings() {
             />
         );
         setSettingsChanged(false);
-        console.log("");
     }, [settings, settingsLoaded, settingsChanged]);
+    
     useEffect(
-        () => console.log("settings changed: ", settings),
+        () => console.log("settings: ", settings),
+        [settings]
+    );
+    useEffect(
+        () => console.log("settings changed"),
         [settingsChanged]
     );
+
+    const resetToDefault = (e: any) => {
+        e.preventDefault();
+        console.log("Reset to default");
+        Object.entries(settingKeys).forEach(([key, info]) => {
+            const value = info.default;
+            window.db.settings.set({ key, value });
+        });
+        window.location.reload();
+    };
 
     return (
         <PageContainer navbarLinks={links} centered={false}>
@@ -80,6 +100,14 @@ export default function Settings() {
                     >
                         Settings saved.
                     </span>
+                    <div className="d-flex flex-center col-12 gap-3 mt-3">
+                        <button
+                            className="btn btn-outline-danger"
+                            onClick={resetToDefault}
+                        >
+                            Reset
+                        </button>
+                    </div>
                 </div>
                 <div className="table-responsive col-12">{eleTable}</div>
             </div>
