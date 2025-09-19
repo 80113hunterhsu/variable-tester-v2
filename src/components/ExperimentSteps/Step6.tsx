@@ -3,13 +3,22 @@ import { useState, useEffect, useRef, RefObject } from "react";
 import { useNavigate } from "react-router-dom";
 
 // helpers
-import { checkRequiredFields } from "../../helpers/ExperimentStepsHelper";
+import {
+    checkRequiredFields,
+    bindEnterKey,
+} from "../../helpers/ExperimentStepsHelper";
 
 // components
 import RecordChart from "../RecordChart";
 import ModalEditScore from "../ModalEditScore";
 
-const requiredFields = ["settings", "subject_name", "variable_name", "video", "record"];
+const requiredFields = [
+    "settings",
+    "subject_name",
+    "variable_name",
+    "video",
+    "record",
+];
 
 function renderContent(
     data: { [key: string]: any },
@@ -63,7 +72,7 @@ async function nextStep(nav: any, data: Record<string, any>) {
     };
     const result = await window.db.experiments.set(experiment);
     console.log("result: ", result);
-    
+
     nav(`/results/${result.id}/view`);
 }
 
@@ -150,13 +159,20 @@ export default function Step6({
     useEffect(() => console.log("newScore: ", newScore), [newScore]);
     useEffect(() => console.log("selectedTime: ", selectedTime), [selectedTime]);
 
-    // bindEnterKey(nextBtnRef);
+    bindEnterKey(nextBtnRef);
     const processContentRender = () => {
         if (!checkRequiredFields(requiredFields, data)) {
             nav("/experiment", { replace: true });
         } else {
             setContent(
-                renderContent(data, player, record, updateRecord, handlePointClick, settings)
+                renderContent(
+                    data,
+                    player,
+                    record,
+                    updateRecord,
+                    handlePointClick,
+                    settings
+                )
             );
         }
     };
