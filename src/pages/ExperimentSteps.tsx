@@ -85,6 +85,9 @@ export default function ExperimentSteps() {
 
     // Render content
     useEffect(() => {
+        if (Object.keys(settings).length === 0) {
+            return;
+        }
         updateData('settings', settings);
     }, [settings]);
     useEffect(() => {
