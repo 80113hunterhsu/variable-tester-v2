@@ -78,8 +78,8 @@ export default function Step6({
     data: { [key: string]: any };
     updateData: (key: string, value: any) => void;
 }) {
-    const settings = data.settings;
     const nav = useNavigate();
+    const settings = data.settings;
     const nextBtnRef = useRef<HTMLButtonElement>(null);
     const player = useRef<HTMLVideoElement>(null);
     const [content, setContent] = useState<JSX.Element | null>(null);

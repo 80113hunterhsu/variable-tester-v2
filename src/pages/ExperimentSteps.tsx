@@ -39,10 +39,14 @@ function renderStep(
             return <Step4 {...{ data, updateData }} />;
         case "5":
             // Step 5: Conduct the experiment by recording scores
-            return <Step5 {...{ data, updateData }} />;
+            if (data.settings) {
+                return <Step5 {...{ data, updateData }} />;
+            }
         case "6":
             // Step 6: Review and edit recorded scores before submission
-            return <Step6 {...{ data, updateData }} />;
+            if (data.settings) {
+                return <Step6 {...{ data, updateData }} />;
+            }
         default:
             nav("/experiment", { replace: true });
             return <></>;
