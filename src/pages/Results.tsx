@@ -25,7 +25,11 @@ function renderContent(
             return (
                 id.toLowerCase().includes(keyword) ||
                 experiment.subject_name?.toLowerCase().includes(keyword) ||
-                experiment.variable_name?.toLowerCase().includes(keyword)
+                experiment.variable_name?.toLowerCase().includes(keyword) ||
+                new Date(`${experiment.created_at.replace(" ", "T")}Z`)
+                    .toLocaleString("zh-TW", { timeZone: "Asia/Taipei" })
+                    .toLowerCase()
+                    .includes(keyword)
             );
         })
         .map(([id, experiment]) => (
@@ -34,7 +38,11 @@ function renderContent(
                 className="results-row"
                 onClick={() => nav(`/results/${id}/view`)}
             >
-                <td>{id}</td>
+                <td>
+                    {new Date(
+                        `${experiment.created_at.replace(" ", "T")}Z`
+                    ).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false })}
+                </td>
                 <td>{experiment.subject_name}</td>
                 <td>{experiment.variable_name}</td>
                 <td>
@@ -87,7 +95,7 @@ export default function Results() {
                     >
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Time</th>
                                 <th>Subject</th>
                                 <th>Variable</th>
                                 <th className="col-1"></th>
