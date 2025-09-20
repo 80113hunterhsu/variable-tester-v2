@@ -6,19 +6,32 @@ import Results from "./pages/Results";
 import ResultsView from "./pages/ResultsView";
 import Settings from "./pages/Settings";
 
+import { logError } from "./helpers/Telemetry";
+
 function App() {
-    return (
-        <HashRouter>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/experiment" element={<Experiment />} />
-                <Route path="/experiment/step/:step" element={<ExperimentSteps />} />
-                <Route path="/results" element={<Results />} />
-                <Route path="/results/:id/view" element={<ResultsView />} />
-                <Route path="/settings" element={<Settings />} />
-            </Routes>
-        </HashRouter>
-    );
+    try {
+        return (
+            <HashRouter>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/experiment" element={<Experiment />} />
+                    <Route path="/experiment/step/:step" element={<ExperimentSteps />} />
+                    <Route path="/results" element={<Results />} />
+                    <Route path="/results/:id/view" element={<ResultsView />} />
+                    <Route path="/settings" element={<Settings />} />
+                </Routes>
+            </HashRouter>
+        );
+    } catch (error) {
+        logError(error);
+        return (
+            <HashRouter>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                </Routes>
+            </HashRouter>
+        );
+    }
 }
 
 export default App;
