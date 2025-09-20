@@ -80,12 +80,14 @@ export default function Settings() {
 
     const resetToDefault = (e: any) => {
         e.preventDefault();
-        console.log("Reset to default");
-        Object.entries(settingKeys).forEach(([key, info]) => {
-            const value = info.default;
-            window.db.settings.set({ key, value });
-        });
-        window.location.reload();
+        if (confirm("Are you sure to reset all settings to default?")) {
+            console.log("Reset to default");
+            Object.entries(settingKeys).forEach(([key, info]) => {
+                const value = info.default;
+                window.db.settings.set({ key, value });
+            });
+            window.location.reload();
+        }
     };
 
     return (
@@ -105,7 +107,7 @@ export default function Settings() {
                             className="btn btn-outline-danger"
                             onClick={resetToDefault}
                         >
-                            Reset
+                            Reset to default settings
                         </button>
                     </div>
                 </div>

@@ -44,7 +44,7 @@ export default function SettingsTable({
                 refUpdatedMessage &&
                     refUpdatedMessage.current &&
                     refUpdatedMessage.current.classList.remove("show");
-            }, 1000);
+            }, 1500);
         }, autosaveTimeout);
     };
     const renderInput = (key: string, value: any) => {

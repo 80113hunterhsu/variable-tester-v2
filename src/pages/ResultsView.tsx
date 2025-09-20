@@ -19,8 +19,10 @@ import { svgToCanvas } from "../helpers/SvgToCanvas";
 function renderExperimentDetails(experiment: Record<string, any>, nav: any) {
     const handleDelete = (e: any) => {
         e.preventDefault();
-        window.db.experiments.delete(experiment.id);
-        nav("/results");
+        if (confirm("Are you sure to delete this experiment record?")) {
+            window.db.experiments.delete(experiment.id);
+            nav("/results");
+        }
     };
     const styles = {
         verticalAlign: "middle",
