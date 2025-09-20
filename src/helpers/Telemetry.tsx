@@ -17,14 +17,6 @@ export function logError(error: any, context: Record<string, any> = {}) {
         if (Object.keys(context).length > 0) {
             bodyContent.context = context;
         }
-        const body = Object.entries(bodyContent)
-            .map(([key, value]: [string, any]) => {
-                if (typeof value === "object") {
-                    return `${key}:\n${JSON.stringify(value, null, 2)}`;
-                }
-                return `${key}: ${value}`;
-            })
-            .join("\n\n");
         sendRequest(title, JSON.stringify(bodyContent, null, 4), ["warning"]);
     } catch (e) {
         console.log("Failed to log error: ", e);
