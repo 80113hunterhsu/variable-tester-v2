@@ -1,4 +1,9 @@
 name: Build & Release Electron App
+
+permissions:
+  contents: write    # Required for creating releases and uploading assets
+  actions: read      # Required for downloading artifacts
+
 on:
   push:
     tags:
@@ -6,40 +11,53 @@ on:
 
 jobs:
   build:
+    timeout-minutes: 60  # Increase timeout for Electron builds
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
-        arch: [x64, arm64, universal]
+        arch: [x64, arm64]
         exclude:
-          - os: windows-latest
-            arch: universal
           - os: windows-latest
             arch: arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          
+          cache: 'npm'  # Enable npm caching for faster builds
+
       - name: Install dependencies
         run: npm ci
-        
+
+      - name: Rebuild native dependencies
+        run: npm run postinstall
+
       - name: Build
+        timeout-minutes: 45  # Set timeout for build step specifically
+        shell: bash  # Force bash on all platforms including Windows
+        env:
+          GITHUB_TOKEN: ""  # Disable electron-builder's GitHub publishing
+          GH_TOKEN: ""      # Alternative token variable
+          CI: ""            # Disable CI detection
+          DEBUG: "electron-builder"  # Enable debugging output
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            npm run build:electron -- --mac --${{ matrix.arch }}
+            npm run build:electron -- --mac --${{ matrix.arch }} --publish=never
           else
-            npm run build:electron -- --win --${{ matrix.arch }}
+            npm run build:electron -- --win --${{ matrix.arch }} --publish=never
           fi
-        
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-${{ matrix.arch }}-artifacts
           path: dist/*
+          retention-days: 7
+          compression-level: 6
+        timeout-minutes: 15
 
   release:
     runs-on: ubuntu-latest
@@ -49,10 +67,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
-          
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/**/*
+          files: |
+            dist/**/Variable Tester v2-Setup-*.dmg
+            dist/**/Variable Tester v2-Setup-*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
