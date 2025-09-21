@@ -36,7 +36,7 @@ export function getSettingKeys(): Record<string, Record<string, any>> {
         },
         resetTimeout: {
             description: "Delay before auto-reset (ms)",
-            default: 5000,
+            default: 1000,
             inputType: "number",
         },
         resetInterval: {
