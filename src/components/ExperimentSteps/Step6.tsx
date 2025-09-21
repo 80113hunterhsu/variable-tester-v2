@@ -7,6 +7,7 @@ import {
     checkRequiredFields,
     bindEnterKey,
 } from "../../helpers/ExperimentStepsHelper";
+import { debounce } from "../../helpers/Element";
 
 // components
 import RecordChart from "../RecordChart";
@@ -190,7 +191,11 @@ export default function Step6({
             <div className="d-flex flex-center gap-3">
                 <button
                     className="btn btn-outline-success btn-lg"
-                    onClick={() => nextStep(nav, data)}
+                    onClick={() =>
+                        debounce(nextBtnRef, () => {
+                            nextStep(nav, data);
+                        })
+                    }
                     ref={nextBtnRef}
                 >
                     Done
