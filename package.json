@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "tsc && vite build",
+    "build:electron": "npm run build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "postinstall": "electron-rebuild"
@@ -50,10 +51,10 @@
       "public/**/*"
     ],
     "icon": "public/favicon",
-    "artifactName": "${productName}-Setup-${version}.${ext}",
     "mac": {
       "target": "dmg",
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "artifactName": "${productName}-Setup-${version}-mac-${arch}.${ext}"
     },
     "dmg": {
       "iconSize": 128,
@@ -72,7 +73,8 @@
       ]
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "artifactName": "${productName}-Setup-${version}-win-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
