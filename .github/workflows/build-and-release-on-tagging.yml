@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    timeout-minutes: 60  # Increase timeout for Electron builds
+    timeout-minutes: 60
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'  # Enable npm caching for faster builds
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -36,13 +36,13 @@ jobs:
         run: npm run postinstall
 
       - name: Build
-        timeout-minutes: 45  # Set timeout for build step specifically
-        shell: bash  # Force bash on all platforms including Windows
+        timeout-minutes: 45
+        shell: bash
         env:
-          GITHUB_TOKEN: ""  # Disable electron-builder's GitHub publishing
-          GH_TOKEN: ""      # Alternative token variable
-          CI: ""            # Disable CI detection
-          DEBUG: "electron-builder"  # Enable debugging output
+          GITHUB_TOKEN: ""  # Disable auto-publish
+          GH_TOKEN: ""
+          CI: ""
+          DEBUG: "electron-builder"
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             npm run build:electron -- --mac --${{ matrix.arch }} --publish=never
@@ -74,5 +74,8 @@ jobs:
           files: |
             dist/**/Variable Tester v2-Setup-*.dmg
             dist/**/Variable Tester v2-Setup-*.exe
+            dist/latest.yml
+            dist/latest-x64.yml
+            dist/latest-arm64.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

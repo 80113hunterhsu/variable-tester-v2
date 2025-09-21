@@ -1,4 +1,5 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog } from 'electron'
+import { autoUpdater } from "electron-updater";
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -48,6 +49,11 @@ function createWindow() {
     win.webContents.openDevTools(); // Open DevTools if the app is running in development mode.
   } else {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
+    win.once('ready-to-show', () => {
+      // Check for updates without auto-downloading after the app is ready
+      autoUpdater.autoDownload = false;
+      autoUpdater.checkForUpdatesAndNotify();
+    });
   }
 }
 
@@ -74,3 +80,52 @@ app.whenReady().then(() => {
   initDBCommands(db);
   initExportCommands(fs);
 })
+
+// show dialogs for update events
+autoUpdater.on('update-available', async (info) => {
+  if (!win) {
+    return;
+  }
+  const { response } = await dialog.showMessageBox(win, {
+    type: 'info',
+    buttons: ['Later', 'Download'], // Left = Later, Right = Download
+    defaultId: 1,                   // Highlight Download button
+    cancelId: 0,                    // Esc = Later
+    title: 'Update available',
+    message: `Version ${info.version} is available. Do you want to download it now?`
+  });
+
+  if (response === 1) {
+    autoUpdater.downloadUpdate();
+  }
+});
+
+autoUpdater.on('download-progress', (progress) => {
+  if (!win) {
+    return;
+  }
+  // Use taskbar/dock progress
+  win.setProgressBar(progress.percent / 100);
+});
+
+autoUpdater.on('update-downloaded', async () => {
+  if (!win) {
+    return;
+  }
+  // reset progress bar when done
+  win.setProgressBar(-1);
+
+  // show dialog to confirm update installation
+  const { response } = await dialog.showMessageBox(win, {
+    type: 'info',
+    buttons: ['Later', 'Install Now'], // Left = Later, Right = Install Now
+    defaultId: 1,                      // Highlight Install Now
+    cancelId: 0,
+    title: 'Update ready',
+    message: 'The update has been downloaded. Do you want to install it now?'
+  });
+
+  if (response === 1) {
+    autoUpdater.quitAndInstall();
+  }
+});
