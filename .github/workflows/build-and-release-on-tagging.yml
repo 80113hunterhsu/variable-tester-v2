@@ -50,6 +50,16 @@ jobs:
             npm run build:electron -- --win --${{ matrix.arch }} --publish=never
           fi
 
+      - name: Verify macOS app signature
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          APP_PATH=$(echo dist/mac*/*.app | head -n 1)
+          echo "Verifying codesign for $APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          echo "Verifying Gatekeeper assessment for $APP_PATH"
+          spctl --assess --type execute --verbose=4 "$APP_PATH"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
