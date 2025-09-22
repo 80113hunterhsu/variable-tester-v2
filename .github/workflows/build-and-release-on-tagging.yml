@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Verify macOS app signature
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest' && env.CODESIGN_IDENTITY != ''
         shell: bash
         run: |
           APP_PATH=$(echo dist/mac*/*.app | head -n 1)
