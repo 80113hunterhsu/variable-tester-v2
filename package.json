@@ -63,6 +63,7 @@
     "mac": {
       "target": "dmg",
       "identity": null,
+      "gatekeeperAssess": false,
       "category": "public.app-category.productivity",
       "artifactName": "${productName}-Setup-${version}-mac-${arch}.${ext}"
     },
