@@ -84,8 +84,8 @@ jobs:
           files: |
             dist/**/Variable Tester v2-Setup-*.dmg
             dist/**/Variable Tester v2-Setup-*.exe
-            dist/latest.yml
-            dist/latest-x64.yml
-            dist/latest-arm64.yml
+            dist/**/latest.yml
+            dist/**/latest-x64.yml
+            dist/**/latest-arm64.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
