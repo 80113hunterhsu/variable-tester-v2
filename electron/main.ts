@@ -33,8 +33,10 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
+    show: false, // hide until maximized to avoid flicker
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
+      nodeIntegration: true,
       preload: path.join(__dirname, 'preload.mjs'),
     },
   })
@@ -55,6 +57,8 @@ function createWindow() {
       autoUpdater.checkForUpdatesAndNotify();
     });
   }
+  win.maximize(); // maximize on launch
+  win.show();
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
