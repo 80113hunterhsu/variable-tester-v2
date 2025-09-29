@@ -9,7 +9,10 @@
     "build:electron": "npm run build && electron-builder",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:major": "npm version major && git push && git push --tags"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
