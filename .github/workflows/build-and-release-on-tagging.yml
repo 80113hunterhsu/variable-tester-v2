@@ -78,9 +78,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/**/Variable Tester v2-Setup-*.dmg
-            dist/**/Variable Tester v2-Setup-*.zip
-            dist/**/Variable Tester v2-Setup-*.exe
+            dist/**/Variable Tester-Setup-*.dmg
+            dist/**/Variable Tester-Setup-*.zip
+            dist/**/Variable Tester-Setup-*.exe
             dist/**/latest*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
