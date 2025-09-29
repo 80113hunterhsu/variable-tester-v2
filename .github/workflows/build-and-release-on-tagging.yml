@@ -84,3 +84,16 @@ jobs:
             dist/**/latest*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    runs-on: ubuntu-latest
+    if: always()   # run no matter what happened before
+    needs: [build, release]
+    steps:
+      - name: Send NTFY notification
+        run: |
+          STATUS="${{ job.status }}"
+          curl -X POST \
+            -H "Title: GitHub Actions" \
+            -d "Workflow finished with status: $STATUS" \
+            ${{ secrets.NTFY_ENDPOINT }}
