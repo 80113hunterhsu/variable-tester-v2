@@ -1,7 +1,7 @@
 {
   "name": "variable-tester-v2",
   "private": true,
-  "version": "1.0.1",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -61,7 +61,22 @@
       }
     ],
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
       "identity": null,
       "gatekeeperAssess": false,
       "category": "public.app-category.productivity",
@@ -84,7 +99,20 @@
       ]
     },
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "artifactName": "${productName}-Setup-${version}-win-${arch}.${ext}"
     },
     "nsis": {

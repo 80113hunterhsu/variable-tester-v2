@@ -15,10 +15,6 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest]
-        arch: [x64, arm64]
-        exclude:
-          - os: windows-latest
-            arch: arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -45,9 +41,9 @@ jobs:
           DEBUG: "electron-builder"
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            npm run build:electron -- --mac --${{ matrix.arch }} --publish=never
+            npm run build:electron -- --mac --publish=never
           else
-            npm run build:electron -- --win --${{ matrix.arch }} --publish=never
+            npm run build:electron -- --win --publish=never
           fi
 
       - name: Verify macOS app signature
@@ -63,7 +59,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-${{ matrix.arch }}-artifacts
+          name: ${{ runner.os }}-artifacts
           path: dist/*
           retention-days: 7
           compression-level: 6
@@ -83,9 +79,8 @@ jobs:
         with:
           files: |
             dist/**/Variable Tester v2-Setup-*.dmg
+            dist/**/Variable Tester v2-Setup-*.zip
             dist/**/Variable Tester v2-Setup-*.exe
-            dist/**/latest.yml
-            dist/**/latest-x64.yml
-            dist/**/latest-arm64.yml
+            dist/**/latest*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
