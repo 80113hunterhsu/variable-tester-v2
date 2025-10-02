@@ -1,8 +1,8 @@
 name: Build & Release Electron App
 
 permissions:
-  contents: write    # Required for creating releases and uploading assets
-  actions: read      # Required for downloading artifacts
+  contents: write # Required for creating releases and uploading assets
+  actions: read # Required for downloading artifacts
 
 on:
   push:
@@ -23,19 +23,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Rebuild native dependencies
+      - name: Rebuild native dependencies for both mac archs
+        if: matrix.os == 'macos-latest'
+        run: |
+          npx electron-builder install-app-deps --arch=arm64
+          npx electron-builder install-app-deps --arch=x64
+
+      - name: Rebuild native dependencies for Windows
+        if: matrix.os == 'windows-latest'
         run: npm run postinstall
 
       - name: Build
         timeout-minutes: 45
         shell: bash
         env:
-          GITHUB_TOKEN: ""  # Disable auto-publish
+          GITHUB_TOKEN: "" # Disable auto-publish
           GH_TOKEN: ""
           CI: ""
           DEBUG: "electron-builder"
@@ -87,7 +94,7 @@ jobs:
 
   notify:
     runs-on: ubuntu-latest
-    if: always()   # run no matter what happened before
+    if: always() # run no matter what happened before
     needs: [build, release]
     steps:
       - name: Send NTFY notification

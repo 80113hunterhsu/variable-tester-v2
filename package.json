@@ -63,6 +63,9 @@
         "repo": "variable-tester-v2"
       }
     ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**"
+    ],
     "mac": {
       "target": [
         {
