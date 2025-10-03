@@ -38,77 +38,53 @@ jobs:
           security default-keychain -s temp.keychain
           security unlock-keychain -p actions temp.keychain
           security set-keychain-settings -lut 21600 temp.keychain
-
-          # Generate self-signed certificate
-          security create-keypair -k temp.keychain
-
-          # Create certificate
+          
+          # Generate certificate
           cat > cert.conf << EOF
           [ req ]
           default_bits       = 2048
           distinguished_name = req_distinguished_name
           x509_extensions    = v3_ca
           prompt             = no
-
+          
           [ req_distinguished_name ]
           CN = VariableTesterSelfSign
-
+          
           [ v3_ca ]
           basicConstraints = critical,CA:TRUE
           keyUsage = critical,digitalSignature,keyEncipherment
           extendedKeyUsage = codeSigning
           EOF
-
-          # Generate certificate and key
+          
           openssl req -new -x509 -days 365 -nodes -config cert.conf \
             -keyout cert.key -out cert.crt
-
-          # Convert to p12
           openssl pkcs12 -export -out cert.p12 -inkey cert.key -in cert.crt -passout pass:temppass
-
-          # Import to keychain
           security import cert.p12 -k temp.keychain -P temppass -T /usr/bin/codesign
-
-          # Set partition list
           security set-key-partition-list -S apple-tool:,apple: -s -k actions temp.keychain
-
-          # Add to search list
           security list-keychains -d user -s temp.keychain login.keychain
-
-          # Find the certificate identity
-          security find-identity -v -p codesigning temp.keychain
-
-          # Clean up
+          
+          # Store the identity for electron-builder
+          echo "CSC_NAME=VariableTesterSelfSign" >> $GITHUB_ENV
+          echo "CSC_KEYCHAIN=temp.keychain" >> $GITHUB_ENV
+          
           rm cert.conf cert.key cert.crt cert.p12
 
       - name: Build
         timeout-minutes: 45
         shell: bash
         env:
-          GITHUB_TOKEN: "" # Disable auto-publish
+          GITHUB_TOKEN: ""
           GH_TOKEN: ""
           CI: ""
           DEBUG: "electron-builder"
+          CSC_NAME: ${{ env.CSC_NAME }}
+          CSC_KEYCHAIN: ${{ env.CSC_KEYCHAIN }}
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             npm run build:electron -- --mac --publish=never
           else
             npm run build:electron -- --win --publish=never
           fi
-
-      - name: Self-sign macOS apps
-        if: matrix.os == 'macos-latest'
-        shell: bash
-        run: |
-          # Get the certificate SHA-1 hash
-          CERT_IDENTITY=$(security find-identity -v -p codesigning temp.keychain | grep "VariableTesterSelfSign" | head -1 | awk '{print $2}')
-
-          for APP_PATH in dist/mac*/*.app; do
-            echo "Signing $APP_PATH with self-signed cert"
-            codesign --deep --force --sign "$CERT_IDENTITY" "$APP_PATH" --keychain temp.keychain
-            echo "Verifying codesign for $APP_PATH"
-            codesign --verify --deep --strict --verbose=2 "$APP_PATH"
-          done
 
       - name: Verify Gatekeeper assessment
         if: matrix.os == 'macos-latest'
