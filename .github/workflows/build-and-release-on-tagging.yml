@@ -131,8 +131,18 @@ jobs:
     steps:
       - name: Send NTFY notification
         run: |
-          STATUS="${{ job.status }}"
+          if [ "${{ needs.build.result }}" == "failure" ] || [ "${{ needs.release.result }}" == "failure" ]; then
+            STATUS="failure"
+          elif [ "${{ needs.build.result }}" == "cancelled" ] || [ "${{ needs.release.result }}" == "cancelled" ]; then
+            STATUS="cancelled"
+          elif [ "${{ needs.build.result }}" == "success" ] && [ "${{ needs.release.result }}" == "success" ]; then
+            STATUS="success"
+          else
+            STATUS="completed with issues"
+          fi
+          
           curl -X POST \
-            -H "Title: GitHub Actions" \
-            -d "Workflow finished with status: $STATUS" \
+            -H "Title: GitHub Actions - Variable Tester" \
+            -H "Tags: $( [ "$STATUS" == "success" ] && echo "white_check_mark" || echo "x" )" \
+            -d "Build ${{ github.ref_name }} finished with status: $STATUS" \
             ${{ secrets.NTFY_ENDPOINT }}
