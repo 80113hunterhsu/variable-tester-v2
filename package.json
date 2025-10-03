@@ -61,12 +61,7 @@
       "node_modules/better-sqlite3/**/*"
     ],
     "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": ["x64", "arm64"]
-        }
-      ],
+      "target": "dmg",
       "identity": null,
       "gatekeeperAssess": false,
       "category": "public.app-category.productivity",
@@ -96,12 +91,7 @@
       ]
     },
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
-      ],
+      "target": "nsis",
       "artifactName": "${productName}-Setup-${version}-win-${arch}.${ext}"
     },
     "nsis": {

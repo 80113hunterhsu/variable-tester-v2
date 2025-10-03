@@ -52,12 +52,6 @@ jobs:
             npm run build:electron -- --win --publish=never
           fi
 
-      - name: Add script to macOS builds
-        if: matrix.platform == 'mac'
-        shell: bash
-        run: |
-          cp remove-quarantine.command dist/ || true
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -81,15 +75,12 @@ jobs:
         with:
           files: |
             dist/**/Variable Tester-Setup-*.dmg
-            dist/**/Variable Tester-Setup-*.zip
             dist/**/Variable Tester-Setup-*.exe
-            dist/**/remove-quarantine.command
           body: |
             ### 📦 Downloads
             - **macOS (arm64)**: For Apple Silicon Macs
             - **macOS (x64)**: For Intel Macs
             - **Windows (x64)**: For Windows 10/11
-            - **remove-quarantine.command**: Helper script for macOS users
 
             ## Which should I download?
             - Download the `.exe` installer for Windows users.
