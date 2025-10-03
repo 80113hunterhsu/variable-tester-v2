@@ -19,6 +19,13 @@ Variable Tester v2 is a desktop application that allows users to perform variabl
 2. Download the installer package for your operating system (Windows or macOS; macOS supports Intel x64 and M-series arm64).
 3. Follow the installer instructions to complete installation and launch the application.
 
+**Recommended for macOS users:** Download the `.dmg` file which includes a helper script to remove quarantine.
+If using the `.zip` file, run this command after extraction:
+```bash
+xattr -cr "/Applications/Variable Tester.app"
+```
+or download the `remove-quarantine.sh` script and run it after extraction.
+
 ## Usage
 
 Variable Tester v2 provides three main types of usage: `Experiment`, `Result`, and `Settings`.

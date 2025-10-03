@@ -29,46 +29,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create and import self-signed certificate
-        if: matrix.os == 'macos-latest'
-        shell: bash
-        run: |
-          # Create a temporary keychain
-          security create-keychain -p actions temp.keychain
-          security default-keychain -s temp.keychain
-          security unlock-keychain -p actions temp.keychain
-          security set-keychain-settings -lut 21600 temp.keychain
-          
-          # Generate certificate
-          cat > cert.conf << EOF
-          [ req ]
-          default_bits       = 2048
-          distinguished_name = req_distinguished_name
-          x509_extensions    = v3_ca
-          prompt             = no
-          
-          [ req_distinguished_name ]
-          CN = VariableTesterSelfSign
-          
-          [ v3_ca ]
-          basicConstraints = critical,CA:TRUE
-          keyUsage = critical,digitalSignature,keyEncipherment
-          extendedKeyUsage = codeSigning
-          EOF
-          
-          openssl req -new -x509 -days 365 -nodes -config cert.conf \
-            -keyout cert.key -out cert.crt
-          openssl pkcs12 -export -out cert.p12 -inkey cert.key -in cert.crt -passout pass:temppass
-          security import cert.p12 -k temp.keychain -P temppass -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k actions temp.keychain
-          security list-keychains -d user -s temp.keychain login.keychain
-          
-          # Store the identity for electron-builder
-          echo "CSC_NAME=VariableTesterSelfSign" >> $GITHUB_ENV
-          echo "CSC_KEYCHAIN=temp.keychain" >> $GITHUB_ENV
-          
-          rm cert.conf cert.key cert.crt cert.p12
-
       - name: Build
         timeout-minutes: 45
         shell: bash
@@ -81,19 +41,12 @@ jobs:
           CSC_KEYCHAIN: ${{ env.CSC_KEYCHAIN }}
         run: |
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            npm run build:electron -- --mac --publish=never
+            npm run build:electron -- --mac --x64 --publish=never
+            npm ci
+            npm run build:electron -- --mac --arm64 --publish=never
           else
             npm run build:electron -- --win --publish=never
           fi
-
-      - name: Verify Gatekeeper assessment
-        if: matrix.os == 'macos-latest'
-        shell: bash
-        run: |
-          for APP_PATH in dist/mac*/*.app; do
-            echo "Verifying Gatekeeper assessment for $APP_PATH"
-            spctl --assess --type execute --verbose=4 "$APP_PATH" || true
-          done
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -121,6 +74,14 @@ jobs:
             dist/**/Variable Tester-Setup-*.zip
             dist/**/Variable Tester-Setup-*.exe
             dist/**/latest*.yml
+            remove-quarantine.sh
+          body: |
+            ## Which should I download?
+            - Download the `.exe` installer for Windows users.
+            - Download the `.dmg` file for macOS users
+              - If you are using an Intel Mac, you can download the x64 version.
+              - If you are using an M-series Mac, you need to download the arm64 version.
+                - M-series macs are required to use the included `remove-quarantine.sh` helper script in the `.dmg` file to remove quarantine.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -142,6 +103,7 @@ jobs:
           fi
           
           curl -X POST \
+            -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" \
             -H "Title: GitHub Actions - Variable Tester" \
             -H "Tags: $( [ "$STATUS" == "success" ] && echo "white_check_mark" || echo "x" )" \
             -d "Build ${{ github.ref_name }} finished with status: $STATUS" \

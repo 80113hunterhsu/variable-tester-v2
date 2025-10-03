@@ -53,7 +53,8 @@
     "files": [
       "dist-electron/**/*",
       "dist/**/*",
-      "public/**/*"
+      "public/**/*",
+      "remove-quarantine.sh"
     ],
     "icon": "public/favicon",
     "publish": [
@@ -64,7 +65,7 @@
       }
     ],
     "asarUnpack": [
-      "node_modules/better-sqlite3/**"
+      "node_modules/better-sqlite3/**/*"
     ],
     "mac": {
       "target": [
@@ -100,6 +101,13 @@
           "y": 220,
           "type": "link",
           "path": "/Applications"
+        },
+        {
+          "x": 270,
+          "y": 380,
+          "type": "file",
+          "path": "remove-quarantine.sh",
+          "name": "Remove Quarantine.sh"
         }
       ]
     },
