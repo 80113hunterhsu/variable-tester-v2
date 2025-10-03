@@ -23,3 +23,6 @@ dist-electron
 *.njsproj
 *.sln
 *.sw?
+selfsign.key
+selfsign.crt
+selfsign.p12
