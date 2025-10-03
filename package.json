@@ -54,16 +54,9 @@
       "dist-electron/**/*",
       "dist/**/*",
       "public/**/*",
-      "remove-quarantine.sh"
+      "remove-quarantine.command"
     ],
     "icon": "public/favicon",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "80113hunterhsu",
-        "repo": "variable-tester-v2"
-      }
-    ],
     "asarUnpack": [
       "node_modules/better-sqlite3/**/*"
     ],
@@ -71,19 +64,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
+          "arch": ["x64", "arm64"]
         }
       ],
+      "identity": null,
       "gatekeeperAssess": false,
       "category": "public.app-category.productivity",
       "artifactName": "${productName}-Setup-${version}-mac-${arch}.${ext}"
@@ -106,8 +90,8 @@
           "x": 270,
           "y": 380,
           "type": "file",
-          "path": "remove-quarantine.sh",
-          "name": "Remove Quarantine.sh"
+          "path": "remove-quarantine.command",
+          "name": "remove-quarantine.command"
         }
       ]
     },
@@ -115,15 +99,7 @@
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ],
       "artifactName": "${productName}-Setup-${version}-win-${arch}.${ext}"

@@ -1,13 +1,13 @@
 name: Build & Release Electron App
 
 permissions:
-  contents: write # Required for creating releases and uploading assets
-  actions: read # Required for downloading artifacts
+  contents: write
+  actions: read
 
 on:
   push:
     tags:
-      - "v*" # Trigger only on version tags (e.g., v1.0.0)
+      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,16 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        include:
+          - os: macos-latest
+            arch: x64
+            platform: mac
+          - os: macos-latest
+            arch: arm64
+            platform: mac
+          - os: windows-latest
+            arch: x64
+            platform: win
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -36,22 +45,23 @@ jobs:
           GITHUB_TOKEN: ""
           GH_TOKEN: ""
           CI: ""
-          DEBUG: "electron-builder"
-          CSC_NAME: ${{ env.CSC_NAME }}
-          CSC_KEYCHAIN: ${{ env.CSC_KEYCHAIN }}
         run: |
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            npm run build:electron -- --mac --x64 --publish=never
-            npm ci
-            npm run build:electron -- --mac --arm64 --publish=never
+          if [ "${{ matrix.platform }}" = "mac" ]; then
+            npm run build:electron -- --mac --${{ matrix.arch }} --publish=never
           else
             npm run build:electron -- --win --publish=never
           fi
 
+      - name: Add script to macOS builds
+        if: matrix.platform == 'mac'
+        shell: bash
+        run: |
+          cp remove-quarantine.command dist/ || true
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-artifacts
+          name: ${{ matrix.platform }}-${{ matrix.arch }}-artifacts
           path: dist/*
           retention-days: 7
           compression-level: 6
@@ -73,15 +83,20 @@ jobs:
             dist/**/Variable Tester-Setup-*.dmg
             dist/**/Variable Tester-Setup-*.zip
             dist/**/Variable Tester-Setup-*.exe
-            dist/**/latest*.yml
-            remove-quarantine.sh
+            dist/**/remove-quarantine.command
           body: |
+            ### 📦 Downloads
+            - **macOS (arm64)**: For Apple Silicon Macs
+            - **macOS (x64)**: For Intel Macs
+            - **Windows (x64)**: For Windows 10/11
+            - **remove-quarantine.command**: Helper script for macOS users
+
             ## Which should I download?
             - Download the `.exe` installer for Windows users.
             - Download the `.dmg` file for macOS users
               - If you are using an Intel Mac, you can download the x64 version.
               - If you are using an M-series Mac, you need to download the arm64 version.
-                - M-series macs are required to use the included `remove-quarantine.sh` helper script in the `.dmg` file to remove quarantine.
+                - M-series macs are required to use the included `remove-quarantine.command` helper script in the `.dmg` file to remove quarantine.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

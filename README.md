@@ -24,7 +24,7 @@ If using the `.zip` file, run this command after extraction:
 ```bash
 xattr -cr "/Applications/Variable Tester.app"
 ```
-or download the `remove-quarantine.sh` script and run it after extraction.
+or download the `remove-quarantine.command` script and run it after extraction.
 
 ## Usage
 
