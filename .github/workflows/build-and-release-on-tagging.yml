@@ -29,20 +29,45 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Import self-signed certificate
+      - name: Create and import self-signed certificate
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          echo "${{ secrets.MAC_CERT_P12 }}" | base64 --decode > /tmp/selfsign.p12
-
           # Create a temporary keychain
           security create-keychain -p actions temp.keychain
           security default-keychain -s temp.keychain
           security unlock-keychain -p actions temp.keychain
           security set-keychain-settings -lut 21600 temp.keychain
 
-          # Import certificate
-          security import /tmp/selfsign.p12 -k temp.keychain -P "${{ secrets.MAC_CERT_PASSWORD }}" -T /usr/bin/codesign -T /usr/bin/productbuild
+          # Generate self-signed certificate
+          security create-keypair -k temp.keychain
+
+          # Create certificate
+          cat > cert.conf << EOF
+          [ req ]
+          default_bits       = 2048
+          distinguished_name = req_distinguished_name
+          x509_extensions    = v3_ca
+          prompt             = no
+
+          [ req_distinguished_name ]
+          CN = VariableTesterSelfSign
+
+          [ v3_ca ]
+          basicConstraints = critical,CA:TRUE
+          keyUsage = critical,digitalSignature,keyEncipherment
+          extendedKeyUsage = codeSigning
+          EOF
+
+          # Generate certificate and key
+          openssl req -new -x509 -days 365 -nodes -config cert.conf \
+            -keyout cert.key -out cert.crt
+
+          # Convert to p12
+          openssl pkcs12 -export -out cert.p12 -inkey cert.key -in cert.crt -passout pass:temppass
+
+          # Import to keychain
+          security import cert.p12 -k temp.keychain -P temppass -T /usr/bin/codesign
 
           # Set partition list
           security set-key-partition-list -S apple-tool:,apple: -s -k actions temp.keychain
@@ -50,8 +75,11 @@ jobs:
           # Add to search list
           security list-keychains -d user -s temp.keychain login.keychain
 
+          # Find the certificate identity
+          security find-identity -v -p codesigning temp.keychain
+
           # Clean up
-          rm /tmp/selfsign.p12
+          rm cert.conf cert.key cert.crt cert.p12
 
       - name: Build
         timeout-minutes: 45
@@ -72,9 +100,12 @@ jobs:
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
+          # Get the certificate SHA-1 hash
+          CERT_IDENTITY=$(security find-identity -v -p codesigning temp.keychain | grep "VariableTesterSelfSign" | head -1 | awk '{print $2}')
+
           for APP_PATH in dist/mac*/*.app; do
             echo "Signing $APP_PATH with self-signed cert"
-            codesign --deep --force --sign "VariableTesterSelfSign" "$APP_PATH"
+            codesign --deep --force --sign "$CERT_IDENTITY" "$APP_PATH" --keychain temp.keychain
             echo "Verifying codesign for $APP_PATH"
             codesign --verify --deep --strict --verbose=2 "$APP_PATH"
           done
