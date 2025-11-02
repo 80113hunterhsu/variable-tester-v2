@@ -16,18 +16,18 @@ function renderContent(data: { [key: string]: any }) {
                 for a level of <strong>{data.variable_name}</strong>.
             </p>
             <p className="fs-5">
-                When you feel the most of {data.variable_name.toLowerCase()}, press the
+                When you feel the most of <strong>{data.variable_name.toLowerCase()}</strong>, press the
                 Increase button (or key N), which is marked with <code>+</code>.
                 Alternately, when you are feeling less of{" "}
-                {data.variable_name.toLowerCase()}, press the Decrease button (or key V),
+                <strong>{data.variable_name.toLowerCase()}</strong>, press the Decrease button (or key V),
                 marked with <code>-</code>.
             </p>
             <p className="fs-5">
                 There will be an onscreen graphical representation of the level you are
-                feeling, at the right side of the video. This bar will default to 0,
-                over time. So, if you are feeling a lot of{" "}
-                {data.variable_name.toLowerCase()}, don't feel afraid to repeatedly hit
-                the mouse, click like wild!
+                feeling, below the video. This bar will default to 0 over time.
+                So, if you are feeling a lot of{" "}
+                <strong>{data.variable_name.toLowerCase()}</strong>, don't feel afraid to repeatedly hit
+                the mouse or key, click like wild!
             </p>
         </>
     );
