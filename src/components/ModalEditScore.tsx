@@ -1,9 +1,5 @@
 // node modules
-import { useRef } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
-
-// helpers
-import { bindEnterKey } from "../helpers/ExperimentStepsHelper";
 
 export default function ModalEditScore({
     showModal,
@@ -13,6 +9,8 @@ export default function ModalEditScore({
     handleSave,
     isBidirectional,
     maxScore,
+    record,
+    selectedTime
 }: {
     showModal: boolean;
     handleHide: () => void;
@@ -21,14 +19,15 @@ export default function ModalEditScore({
     handleSave: () => void;
     isBidirectional: boolean;
     maxScore: number;
+    record: Record<string, { time: string; timeMS: string; score: number }>;
+    selectedTime: string|null;
 }) {
-    const saveBtnRef = useRef<HTMLButtonElement>(null);
-    bindEnterKey(saveBtnRef);
     const minScore = isBidirectional ? -maxScore : 0;
+    const timeMS = selectedTime && record[selectedTime].timeMS && record[selectedTime].timeMS;
     return (
         <Modal show={showModal} onHide={handleHide} centered>
             <Modal.Header closeButton>
-                <Modal.Title>Edit Score</Modal.Title>
+                <Modal.Title>Edit Score on {timeMS}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form>
@@ -54,7 +53,7 @@ export default function ModalEditScore({
                 <Button variant="secondary" onClick={handleHide}>
                     Cancel
                 </Button>
-                <Button variant="primary" onClick={handleSave} ref={saveBtnRef}>
+                <Button variant="primary" onClick={handleSave}>
                     Save Changes
                 </Button>
             </Modal.Footer>

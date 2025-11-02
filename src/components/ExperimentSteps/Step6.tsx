@@ -92,6 +92,7 @@ export default function Step6({
     const nav = useNavigate();
     const settings = data.settings;
     const nextBtnRef = useRef<HTMLButtonElement>(null);
+    const editScoreBtnRef = useRef<HTMLButtonElement>(null);
     const player = useRef<HTMLVideoElement>(null);
     const [content, setContent] = useState<JSX.Element | null>(null);
     const [record, setRecord] = useState<
@@ -137,6 +138,14 @@ export default function Step6({
         setSelectedTime(key);
         jumpToTime(key);
         setNewScore(payload.score);
+        editScoreBtnRef.current?.classList.remove("disabled");
+    };
+
+    const handleEditScore = () => {
+        if (!selectedTime) {
+            return;
+        }
+        pausePlayer();
         setShowModal(true);
     };
 
@@ -147,14 +156,13 @@ export default function Step6({
         }
         setShowModal(false); // close modal
         setSelectedTime(null); // reset selected time
-        pausePlayer();
+        editScoreBtnRef.current?.classList.add("disabled");
     };
 
     // Hide modal
     const handleHide = () => {
         setShowModal(false);
         setSelectedTime(null);
-        pausePlayer();
     };
 
     useEffect(() => console.log("showModal: ", showModal), [showModal]);
@@ -191,6 +199,13 @@ export default function Step6({
             {content}
             <div className="d-flex flex-center gap-3">
                 <button
+                    className="btn btn-outline-secondary btn-lg disabled"
+                    onClick={() => debounce(nextBtnRef, handleEditScore)}
+                    ref={editScoreBtnRef}
+                >
+                    Edit Score
+                </button>
+                <button
                     className="btn btn-outline-success btn-lg"
                     onClick={() =>
                         debounce(nextBtnRef, () => {
@@ -213,6 +228,8 @@ export default function Step6({
                     handleSave,
                     isBidirectional,
                     maxScore,
+                    record,
+                    selectedTime
                 }}
             />
         </div>
