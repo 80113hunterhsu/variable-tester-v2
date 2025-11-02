@@ -33,7 +33,8 @@ function renderContent(
                     ref={player}
                     autoPlay={true}
                     controls
-                    controlsList="nodownload"
+                    disablePictureInPicture
+                    controlsList="nodownload noplaybackrate nofullscreen"
                     className="col-6 p-0 rounded-4"
                 >
                     <source src={URL.createObjectURL(data.video)} type="video/mp4" />
