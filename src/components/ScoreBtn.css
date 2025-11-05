@@ -1,0 +1,42 @@
+#scoreBtn_wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#scoreBtn_leftGradient {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(to right, white 60%, transparent 100%);
+}
+
+#scoreBtn_rightGradient {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 32px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(to left, white 60%, transparent 100%);
+}
+
+#scoreBtn_scollWrapper {
+    overflow-x: auto;
+    width: 100%;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+}
+
+#scoreBtn_btnWrapper {
+    min-width: max-content;
+}
+
+.scrollBtn_btn {
+    max-width: 60px;
+    scroll-snap-align: center;
+}

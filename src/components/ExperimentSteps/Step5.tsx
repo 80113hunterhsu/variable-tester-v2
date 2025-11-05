@@ -6,7 +6,7 @@ import beepSound from "../../assets/beep.mp3";
 
 // components
 import RecordChart from "../RecordChart";
-import ScoreBar from "../ScoreBar";
+import ScoreBtn from "../ScoreBtn";
 
 // helpers
 import { debounce } from "../../helpers/Element";
@@ -232,6 +232,11 @@ export default function Step5({
         console.log("Score changed:", score);
     }, [score]);
 
+    const handleDirectSetScore = (newScore: number) => {
+        setScore(scoreCorrection(settings, newScore));
+        resetInactivityTimer();
+    };
+
     // Rendering content sections
     const processContentRender = () => {
         // Check if required fields are present, then render initial content
@@ -297,7 +302,7 @@ export default function Step5({
             {content}
             <div className="row flex-center col-12 gap-3">
                 <div className="d-flex flex-center col-12">
-                    <ScoreBar {...{ score, maxScore, isBidirectional }} />
+                    <ScoreBtn {...{ score, maxScore, isBidirectional, handleDirectSetScore }} />
                 </div>
                 <div className="d-flex flex-center col-12 gap-3">
                     <button

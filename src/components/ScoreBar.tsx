@@ -1,6 +1,10 @@
 // styles
 import "./ScoreBar.css";
 
+/**
+ * ScoreBar: 目前分數顯示條
+ * @deprecated 請改用 ScoreBtn 元件
+ */
 export default function ScoreBar({
     score,
     maxScore,
